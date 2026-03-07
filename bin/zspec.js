@@ -5,7 +5,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { execSync } from 'node:child_process';
 
-const PKG = 'gsd-speckit';
+const PKG = 'zspec';
 
 function die(msg, code = 1) {
   console.error(`\n${PKG}: ${msg}`);
@@ -13,7 +13,7 @@ function die(msg, code = 1) {
 }
 
 function usage() {
-  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  gsd-speckit init [--force]\n  gsd-speckit new <feature-name>\n  gsd-speckit use <skill-name>\n  gsd-speckit status\n  gsd-speckit mcp\n\nWhat it does:\n  - init: scaffold repo conventions (AGENTS.md, specs/, gsd/, mcp/serena.json, scripts, skills)\n  - new: create specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: print Serena MCP client snippets and run commands\n`);
+  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} init [--force]\n  ${PKG} new <feature-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init: scaffold repo conventions (AGENTS.md, specs/, gsd/, mcp/serena.json, scripts, skills)\n  - new: create specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: print Serena MCP client snippets and run commands\n`);
 }
 
 function repoRoot() {
@@ -136,8 +136,8 @@ function cmd_init(args) {
   console.log(`    tasks.md         ← task breakdown (spec:add-tasks)`);
   console.log(`  gsd/memory/constitution.md  ← project principles`);
   console.log(`\nNext:`);
-  console.log(`  1) Create a spec: gsd-speckit new "add billing"  (or: npm run spec:new -- "add billing")`);
-  console.log(`  2) Configure Serena MCP in your client using: gsd-speckit mcp`);
+  console.log(`  1) Create a spec: ${PKG} new "add billing"  (or: npm run spec:new -- "add billing")`);
+  console.log(`  2) Configure Serena MCP in your client using: ${PKG} mcp`);
 }
 
 function cmd_new(args) {
@@ -213,7 +213,7 @@ function cmd_use(args) {
   console.log(
 `Activate the skill "${skill}" by reading ${exists(skillPath) ? `skills/${skill}/SKILL.md` : `skills/${skill}/SKILL.md (not found—did you run init?)`}.
 Then:
-- Apply the skill’s rules as constraints.
+- Apply the skill's rules as constraints.
 - Keep code production-grade and runnable.
 - If requirements are missing, ask only the minimum questions, then proceed with assumptions.
 `);
@@ -272,7 +272,7 @@ function cmd_mcp() {
   const root = repoRoot();
   console.log(`\n🧠 Serena MCP (default)\n`);
   console.log(`This scaffold includes mcp/serena.json and scripts/serena.mjs.`);
-  console.log(`Serena can be launched via stdio subprocess or as an HTTP/SSE server; clients differ. Serena docs: https://oraios.github.io/serena/ (see “Running Serena” and “Connecting Your MCP Client”).`);
+  console.log(`Serena can be launched via stdio subprocess or as an HTTP/SSE server; clients differ. Serena docs: https://oraios.github.io/serena/ (see "Running Serena" and "Connecting Your MCP Client").`);
   console.log(`\nRecommended (most reliable) install/run path is via Python uv/uvx (per many Serena guides), but you can adapt.`);
 
   console.log(`\n1) Stdio mode (client launches Serena as subprocess)`);
