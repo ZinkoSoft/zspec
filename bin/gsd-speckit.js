@@ -13,7 +13,7 @@ function die(msg, code = 1) {
 }
 
 function usage() {
-  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  gsd-speckit init [--force]\n  gsd-speckit new <feature-name>\n  gsd-speckit use <skill-name>\n  gsd-speckit status\n  gsd-speckit mcp\n\nWhat it does:\n  - init: scaffold repo conventions (AGENTS.md, specs/, gsd/, .github/, mcp/serena.json, scripts, skills)\n  - new: create a numbered spec in specs/active and print a Copilot-ready prompt\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize active specs and recent log entries\n  - mcp: print Serena MCP client snippets and run commands\n`);
+  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  gsd-speckit init [--force]\n  gsd-speckit new <feature-name>\n  gsd-speckit use <skill-name>\n  gsd-speckit status\n  gsd-speckit mcp\n\nWhat it does:\n  - init: scaffold repo conventions (AGENTS.md, specs/, gsd/, mcp/serena.json, scripts, skills)\n  - new: create specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: print Serena MCP client snippets and run commands\n`);
 }
 
 function repoRoot() {
