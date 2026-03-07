@@ -20,6 +20,6 @@
     "url": "https://github.com/ZinkoSoft/zspec"
   },
   "scripts": {
-    "test": "node --test test/zspec.test.js"
+    "test": "node --test 'test/**/*.test.js'"
   }
 }

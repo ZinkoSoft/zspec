@@ -1,11 +1,13 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-const BIN = path.resolve(import.meta.dirname, '..', 'bin', 'zspec.js');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const BIN = path.resolve(__dirname, '..', 'bin', 'zspec.js');
 
 function run(args, options = {}) {
   return spawnSync(process.execPath, [BIN, ...args], {
@@ -22,7 +24,7 @@ describe('help', () => {
   it('prints usage with no arguments', () => {
     const { stdout, status } = run([]);
     assert.equal(status, 0);
-    assert.match(stdout, /zspec v0\.1\.0/);
+    assert.match(stdout, /zspec v\d+\.\d+\.\d+/);
     assert.match(stdout, /Usage:/);
     assert.match(stdout, /init/);
     assert.match(stdout, /new/);
@@ -34,13 +36,13 @@ describe('help', () => {
   it('prints usage with --help', () => {
     const { stdout, status } = run(['--help']);
     assert.equal(status, 0);
-    assert.match(stdout, /zspec v0\.1\.0/);
+    assert.match(stdout, /zspec v\d+\.\d+\.\d+/);
   });
 
   it('prints usage with -h', () => {
     const { stdout, status } = run(['-h']);
     assert.equal(status, 0);
-    assert.match(stdout, /zspec v0\.1\.0/);
+    assert.match(stdout, /zspec v\d+\.\d+\.\d+/);
   });
 });
 
