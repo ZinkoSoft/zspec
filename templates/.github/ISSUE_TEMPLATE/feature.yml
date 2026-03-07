@@ -1,0 +1,24 @@
+name: Feature
+description: New capability or improvement
+title: "feat: "
+labels: ["feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are we trying to accomplish and why?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Bullet list of what must be true for this to be done.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / context
+      description: Links, screenshots, constraints, risks.

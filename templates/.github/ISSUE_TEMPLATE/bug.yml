@@ -1,0 +1,29 @@
+name: Bug
+description: Something is broken
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: repro
+    attributes:
+      label: Repro steps
+      description: Steps to reproduce the bug.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS, versions, logs.

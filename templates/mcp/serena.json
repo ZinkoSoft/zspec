@@ -1,0 +1,10 @@
+{
+  "name": "serena",
+  "description": "Serena MCP server (semantic code tools)",
+  "transport": "stdio",
+  "command": "node",
+  "args": ["scripts/serena.mjs", "stdio", "--project-from-cwd"],
+  "env": {
+    "SERENA_CMD": "uvx --from git+https://github.com/oraios/serena serena"
+  }
+}
