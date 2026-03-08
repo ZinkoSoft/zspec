@@ -89,6 +89,46 @@ function safeSh(cmd) {
   catch { return null; }
 }
 
+const SERENA_MCP_ENTRY = {
+  type: 'stdio',
+  command: 'node',
+  args: ['.zspec/scripts/serena.mjs', 'stdio', '--project-from-cwd'],
+  env: {
+    SERENA_CMD: 'uvx --from git+https://github.com/oraios/serena serena'
+  }
+};
+
+function ensureVscodeMcpSerena(root) {
+  const vscodePath = path.join(root, '.vscode');
+  const mcpPath = path.join(vscodePath, 'mcp.json');
+  ensureDir(vscodePath);
+
+  if (!exists(mcpPath)) {
+    const content = JSON.stringify({ servers: { serena: SERENA_MCP_ENTRY } }, null, 2) + os.EOL;
+    fs.writeFileSync(mcpPath, content, 'utf8');
+    console.log('✅ Created .vscode/mcp.json with Serena MCP server.');
+    return;
+  }
+
+  let mcp;
+  try {
+    mcp = JSON.parse(readText(mcpPath));
+  } catch {
+    console.warn('⚠️  .vscode/mcp.json exists but could not be parsed — skipping Serena entry.');
+    return;
+  }
+
+  mcp.servers ??= {};
+  if (mcp.servers.serena) {
+    console.log('ℹ️  .vscode/mcp.json already has a "serena" server — skipping.');
+    return;
+  }
+
+  mcp.servers.serena = SERENA_MCP_ENTRY;
+  fs.writeFileSync(mcpPath, JSON.stringify(mcp, null, 2) + os.EOL, 'utf8');
+  console.log('✅ Added Serena MCP server to existing .vscode/mcp.json.');
+}
+
 function cmd_init(args) {
   const force = args.includes('--force');
   const root = repoRoot();
@@ -136,6 +176,9 @@ function cmd_init(args) {
 
   // Ensure .zspec/ story directories exist
   ensureDir(path.join(root, '.zspec', 'stories'));
+
+  // Ensure .vscode/mcp.json has a Serena entry
+  ensureVscodeMcpSerena(root);
 
   console.log(`\n✅ Initialized ${PKG} scaffold in ${root}`);
   console.log(`\nStory layout (.zspec-style, one dir per story):`);
