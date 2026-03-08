@@ -1,6 +1,6 @@
 {
   "name": "zspec",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "CLI scaffold combining the GSD workflow + GitHub Speckit spec management + Serena-first MCP config",
   "type": "module",
   "bin": {
