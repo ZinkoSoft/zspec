@@ -13,7 +13,7 @@ function die(msg, code = 1) {
 }
 
 function usage() {
-  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} init [--force]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init: scaffold repo conventions (AGENTS.md, .zspec/, specs/, gsd/, .github/agents/, scripts, skills)\n  - new: create specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: create .zspec/stories/<slug>/ with story.md, context.md, tasks.md, notes.md, codebase/\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: print Serena MCP client snippets and run commands\n`);
+  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} init [--force]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init: scaffold repo conventions (AGENTS.md, .zspec/, specs/, zspec/, .github/agents/, scripts, skills)\n  - new: create specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: create .zspec/stories/<slug>/ with story.md, context.md, tasks.md, notes.md, codebase/\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: print Serena MCP client snippets and run commands\n`);
 }
 
 function repoRoot() {
@@ -97,19 +97,19 @@ function cmd_init(args) {
       const pkg = JSON.parse(readText(pkgPath));
       pkg.scripts ??= {};
       const scripts = {
-        "gsd:repo": "node gsd/run.mjs repo:summary",
-        "gsd:diff": "node gsd/run.mjs git:diff-summary",
-        "gsd:plan": "node gsd/run.mjs spec:plan",
-        "gsd:pr": "node gsd/run.mjs git:pr-body",
-        "gsd:check": "node gsd/run.mjs checks:all",
-        "spec:init": "node gsd/run.mjs spec:init",
-        "spec:new": "node gsd/run.mjs spec:new",
-        "spec:list": "node gsd/run.mjs spec:list",
-        "spec:add-plan": "node gsd/run.mjs spec:add-plan",
-        "spec:add-tasks": "node gsd/run.mjs spec:add-tasks",
-        "spec:commit": "node gsd/run.mjs spec:commit",
-        "spec:done": "node gsd/run.mjs spec:done",
-        "spec:reject": "node gsd/run.mjs spec:reject"
+        "zspec:repo": "node zspec/run.mjs repo:summary",
+        "zspec:diff": "node zspec/run.mjs git:diff-summary",
+        "zspec:plan": "node zspec/run.mjs spec:plan",
+        "zspec:pr": "node zspec/run.mjs git:pr-body",
+        "zspec:check": "node zspec/run.mjs checks:all",
+        "spec:init": "node zspec/run.mjs spec:init",
+        "spec:new": "node zspec/run.mjs spec:new",
+        "spec:list": "node zspec/run.mjs spec:list",
+        "spec:add-plan": "node zspec/run.mjs spec:add-plan",
+        "spec:add-tasks": "node zspec/run.mjs spec:add-tasks",
+        "spec:commit": "node zspec/run.mjs spec:commit",
+        "spec:done": "node zspec/run.mjs spec:done",
+        "spec:reject": "node zspec/run.mjs spec:reject"
       };
       for (const [k, v] of Object.entries(scripts)) {
         if (!pkg.scripts[k] || force) pkg.scripts[k] = v;
@@ -126,7 +126,7 @@ function cmd_init(args) {
 
   // Ensure specs/ and its template dir exist
   ensureDir(path.join(root, 'specs', '0000-template'));
-  ensureDir(path.join(root, 'gsd', 'memory'));
+  ensureDir(path.join(root, 'zspec', 'memory'));
 
   // Ensure .zspec/ story directories exist
   ensureDir(path.join(root, '.zspec', 'stories'));
@@ -144,7 +144,7 @@ function cmd_init(args) {
   console.log(`    spec.md          ← requirements (spec:new)`);
   console.log(`    plan.md          ← technical plan (spec:add-plan)`);
   console.log(`    tasks.md         ← task breakdown (spec:add-tasks)`);
-  console.log(`  gsd/memory/constitution.md  ← project principles`);
+  console.log(`  zspec/memory/constitution.md  ← project principles`);
   console.log(`\nCopilot agents (.github/agents/):`);
   console.log(`  @codebase-mapper  ← orchestrates codebase analysis for a story`);
   console.log(`  @stack-mapper     ← analyzes stack and integrations`);
@@ -207,13 +207,13 @@ function cmd_new(args) {
   console.log(`\nCopilot / agent prompt to paste once:`);
   console.log('---');
   console.log(
-`Read AGENTS.md and gsd/memory/constitution.md (if present). Then open and follow the spec: ${specRel}.
+`Read AGENTS.md and zspec/memory/constitution.md (if present). Then open and follow the spec: ${specRel}.
 
 Rules:
 - Prefer Serena MCP tools for symbol lookup + edits when available.
 - Ask at most 7 critical questions only if truly blocking; otherwise proceed with explicit assumptions.
 - Produce: (1) a short implementation plan (3–7 steps), then (2) implement Step 1 as a small, reviewable diff.
-- After changes: run checks (tests/lint/typecheck if present) and update gsd/logs/progress.md with what changed and how to verify.
+- After changes: run checks (tests/lint/typecheck if present) and update zspec/logs/progress.md with what changed and how to verify.
 - Use spec:add-plan and spec:add-tasks to scaffold the plan and task breakdown docs.
 `);
   console.log('---');
@@ -312,7 +312,7 @@ Then:
 function cmd_status() {
   const root = repoRoot();
   const specsDir = path.join(root, 'specs');
-  const logs = path.join(root, 'gsd', 'logs', 'progress.md');
+  const logs = path.join(root, 'zspec', 'logs', 'progress.md');
 
   console.log(`\n📌 ${PKG} status (${root})\n`);
 
@@ -350,11 +350,11 @@ function cmd_status() {
     console.log('Recent progress log:');
     console.log(tail.map(l => `  ${l}`).join('\n'));
   } else {
-    console.log('No progress log found at gsd/logs/progress.md');
+    console.log('No progress log found at zspec/logs/progress.md');
   }
 
   console.log('');
-  console.log('Tip: run `node gsd/run.mjs repo:summary` to give agents instant context.');
+  console.log('Tip: run `node zspec/run.mjs repo:summary` to give agents instant context.');
 }
 
 function cmd_mcp() {

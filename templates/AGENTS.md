@@ -17,25 +17,25 @@ feature work organized by user story with Copilot agent support.
 3. **Implement**: Follow `tasks.md`, reference `codebase/` docs
 4. **Log decisions**: Update `notes.md` as you go
 
-### GSD + Speckit Workflow (existing)
+### zspec Workflow (existing)
 
 For ad-hoc features or teams using the older spec-per-feature approach:
 
 1. **Create a spec**: `zspec new "<feature name>"`
-2. **Follow the GSD loop** (below)
-3. **Log progress**: Append to `gsd/logs/progress.md`
+2. **Follow the zspec loop** (below)
+3. **Log progress**: Append to `zspec/logs/progress.md`
 
 ---
 
-## GSD Default Loop
+## zspec Default Loop
 
-1. **Load context** — read the active spec(s) and `gsd/memory/constitution.md`
+1. **Load context** — read the active spec(s) and `zspec/memory/constitution.md`
 2. **Ask bounded questions** — at most 7 critical questions; proceed with
    explicit assumptions if info is missing
 3. **Plan** — 3–7 PR-sized steps (small, reviewable, easy rollback)
 4. **Execute** — prefer Serena MCP tools for symbol lookup and safe edits
 5. **Verify** — run tests, lint, typecheck; provide manual plan if unavailable
-6. **Log** — append to `gsd/logs/progress.md`: what changed, how to verify,
+6. **Log** — append to `zspec/logs/progress.md`: what changed, how to verify,
    any risks
 
 ---
