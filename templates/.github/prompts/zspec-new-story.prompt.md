@@ -36,12 +36,27 @@ Scaffold a new story in two phases: create via CLI (source of truth), then fill 
    - `zspec story` already handles git init, branch selection, and `NNNN-<slug>` auto-incrementing.
 8. Read the created `.zspec/stories/<story-slug>/` files and continue from there.
 
-## Phase 1 - Fill in story content with Serena
+## Phase 1 - Fill in story content
 
-1. Work with these four files under `.zspec/stories/<story-slug>/`:
-2. Load shared codebase context before writing story content:
+1. Load shared codebase context before writing story content:
    - Read `.zspec/codebase/*.md` (for example: `STACK.md`, `INTEGRATIONS.md`, `ARCHITECTURE.md`, `STRUCTURE.md`, `CONVENTIONS.md`, `TESTING.md`, `CONCERNS.md`).
    - If the folder is missing or mostly empty, note that context is incomplete and continue with explicit assumptions.
+2. Research the codebase using available tools to understand the relevant systems for this story.
+3. Compose the filled-in content for all four story files based on your research.
+4. Write the content using the **best available tool** — you must write something; do not stop without creating the files:
+   - **Preferred (Serena available)**: use `mcp_oraios_serena_replace_symbol_body` to overwrite each `##` section body in the existing files. Markdown headings are symbols — use `find_symbol` to locate them by name path, then `replace_symbol_body` to overwrite the section body.
+   - **Fallback (Serena unavailable)**: use `create_file` to write each file in full with the complete content below, substituting your research findings for the placeholder comments. If the file already exists from Phase 0, overwrite it.
+5. Fill these sections in `story.md`:
+   - `## User Story` — role, action, business value
+   - `## Acceptance Criteria` — at least 3 concrete, testable criteria
+   - `## Business Goal` — outcome and value delivered
+6. Fill `context.md` sections with codebase findings from both `.zspec/codebase/*.md` and repository inspection:
+   - `## Relevant Systems`, `## Touched Modules`, `## Dependencies`, `## Architectural Notes`
+7. Add story-specific tasks to `tasks.md` under `## Implementation Checklist`.
+8. Note any open questions or risks in `notes.md`.
+9. Remind the user to run `@codebase-mapper` to populate or refresh `.zspec/codebase/` shared docs when needed.
+
+### File templates (for `create_file` fallback)
 
 **`.zspec/stories/<story-slug>/story.md`**
 ```markdown
@@ -154,16 +169,3 @@ Scaffold a new story in two phases: create via CLI (source of truth), then fill 
 
 ## Implementation Notes
 ```
-
-Once the files exist, use **`mcp_oraios_serena_replace_symbol_body`** to write content into each section. Markdown headings (`##`, `###`) are symbols - use `find_symbol` to locate them by name path, then `replace_symbol_body` to overwrite the section body.
-
-3. Research the codebase using Serena tools (`find_symbol`, `get_symbols_overview`, `search_for_pattern`) to understand relevant systems.
-4. Fill these sections in `story.md` using `replace_symbol_body`:
-   - `## User Story` — role, action, business value
-   - `## Acceptance Criteria` — at least 3 concrete, testable criteria
-   - `## Business Goal` — outcome and value delivered
-5. Fill `context.md` sections with codebase findings from both `.zspec/codebase/*.md` and repository inspection:
-   - `## Relevant Systems`, `## Touched Modules`, `## Dependencies`, `## Architectural Notes`
-6. Add story-specific tasks to `tasks.md` under `## Implementation Checklist`.
-7. Note any open questions or risks in `notes.md`.
-8. Remind the user to run `@codebase-mapper` to populate or refresh `.zspec/codebase/` shared docs when needed.
