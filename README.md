@@ -2,7 +2,7 @@
 
 **zspec** is a CLI scaffold that combines two complementary workflows into one tool:
 
-- **zspec workflow** — a pragmatic, log-driven productivity workflow that keeps teams moving with small diffs, explicit assumptions, and continuous progress logging.
+- **gsd workflow** — a pragmatic, log-driven productivity workflow that keeps teams moving with small diffs, explicit assumptions, and continuous progress logging.
 - **GitHub Speckit** — a spec-first, directory-per-feature specification system inspired by GitHub's internal [spec-kit](https://github.com/github/spec-kit), where every feature lives in its own `specs/NNNN-slug/` directory and its lifecycle is tracked through git branches.
 
 On top of these two, **zspec** wires in [**Serena MCP**](https://oraios.github.io/serena/) — a Model Context Protocol server for AI agents — so that Copilot, Claude, or any MCP-capable agent can navigate and edit your codebase with structured tools instead of raw file reads.
