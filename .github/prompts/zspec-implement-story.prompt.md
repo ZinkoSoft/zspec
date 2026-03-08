@@ -2,15 +2,12 @@
 mode: agent
 description: Implement a story end-to-end: read story docs, ask blocking questions, produce an implementation plan, then implement Step 1 as a small reviewable diff.
 tools:
-  - read_file
-  - list_dir
-  - search_files
-  - mcp_oraios_serena_find_symbol
-  - mcp_oraios_serena_get_symbols_overview
-  - mcp_oraios_serena_replace_symbol_body
-  - mcp_oraios_serena_insert_after_symbol
-  - edit_file
-  - run_in_terminal
+  - agent
+  - read
+  - edit
+  - search
+  - execute
+  - oraios/serena/*
 ---
 
 # Implement Story

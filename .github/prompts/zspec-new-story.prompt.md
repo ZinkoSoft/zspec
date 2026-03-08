@@ -2,12 +2,12 @@
 mode: agent
 description: Scaffold a new zspec story with story.md, context.md, tasks.md, notes.md.
 tools:
-  - create_file
-  - mcp_oraios_serena_find_symbol
-  - mcp_oraios_serena_replace_symbol_body
-  - read_file
-  - list_dir
-  - run_in_terminal
+  - agent
+  - read
+  - edit
+  - search
+  - execute
+  - oraios/serena/*
 ---
 
 # New Story
