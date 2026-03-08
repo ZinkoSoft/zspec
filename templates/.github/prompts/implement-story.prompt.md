@@ -1,0 +1,43 @@
+---
+mode: agent
+description: Implement a story end-to-end: read story docs, ask blocking questions, produce an implementation plan, then implement Step 1 as a small reviewable diff.
+tools:
+  - read_file
+  - list_dir
+  - search_files
+  - edit_file
+  - run_in_terminal
+---
+
+# Implement Story
+
+Drive end-to-end implementation of a `.zspec` story following the project's engineering principles.
+
+## Instructions
+
+1. Ask for the story slug if not already provided.
+2. Read the story documents in order:
+   - `.zspec/stories/<story-slug>/story.md` — user story and acceptance criteria
+   - `.zspec/stories/<story-slug>/context.md` — relevant systems and architectural notes
+   - `.zspec/stories/<story-slug>/tasks.md` — implementation checklist
+   - `.zspec/stories/<story-slug>/notes.md` — open questions, decisions, risks
+   - `.zspec/stories/<story-slug>/codebase/` — STACK, ARCHITECTURE, CONVENTIONS, TESTING, CONCERNS
+3. Also read `AGENTS.md` and `.github/copilot-instructions.md` for project-level rules.
+4. Ask at most **7 critical questions** — only questions that are truly blocking. State explicit assumptions for everything else.
+5. Produce a short **implementation plan** (3–7 numbered steps).
+6. Implement **Step 1** as a small, focused, reviewable diff.
+7. After changes:
+   - Run available checks (tests, lint, typecheck)
+   - Update `tasks.md` to mark completed items
+   - Record any decisions or tradeoffs in `notes.md`
+
+## Engineering Principles
+
+- **YAGNI** — build only what is needed for the current story
+- **KISS** — prefer the simplest solution that meets acceptance criteria
+- **Readability first** — code is read far more than it is written
+- **Consistency** — follow existing patterns before introducing new ones
+
+## Output
+
+Step 1 implemented as a diff, checks passing, and `tasks.md` updated.

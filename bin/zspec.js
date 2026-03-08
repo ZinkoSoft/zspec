@@ -13,7 +13,7 @@ function die(msg, code = 1) {
 }
 
 function usage() {
-  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} init [--force]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init: scaffold repo conventions (AGENTS.md, .zspec/, specs/, zspec/, .github/agents/, scripts, skills)\n  - new: create specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: create .zspec/stories/<slug>/ with story.md, context.md, tasks.md, notes.md, codebase/\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: print Serena MCP client snippets and run commands\n`);
+  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} [init] [--force]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init (default): scaffold repo conventions (AGENTS.md, .zspec/, specs/, zspec/, .github/agents/, .github/prompts/, scripts, skills)\n  - new: create specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: create .zspec/stories/<slug>/ with story.md, context.md, tasks.md, notes.md, codebase/\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: print Serena MCP client snippets and run commands\n`);
 }
 
 function repoRoot() {
@@ -151,6 +151,12 @@ function cmd_init(args) {
   console.log(`  @arch-mapper      ← analyzes architecture and structure`);
   console.log(`  @quality-mapper   ← analyzes conventions and testing`);
   console.log(`  @concerns-mapper  ← identifies technical concerns`);
+  console.log(`\nCopilot Chat prompts (.github/prompts/):`);
+  console.log(`  new-story         ← scaffold a new story`);
+  console.log(`  map-codebase      ← analyze codebase for a story`);
+  console.log(`  new-spec          ← create a new feature spec`);
+  console.log(`  implement-story   ← implement a story end-to-end`);
+  console.log(`  pr-description    ← generate a PR description`);
   console.log(`\nNext:`);
   console.log(`  1) Create a story: ${PKG} story "add billing"`);
   console.log(`  2) Or create a spec: ${PKG} new "add billing"  (or: npm run spec:new -- "add billing")`);
@@ -381,12 +387,13 @@ function cmd_mcp() {
 const argv = process.argv.slice(2);
 const cmd = argv.shift();
 
-if (!cmd || cmd === '--help' || cmd === '-h') {
+if (cmd === '--help' || cmd === '-h') {
   usage();
   process.exit(0);
 }
 
 switch (cmd) {
+  case undefined:
   case 'init':
     cmd_init(argv);
     break;

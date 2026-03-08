@@ -21,8 +21,21 @@ function run(args, options = {}) {
 // ---------------------------------------------------------------------------
 
 describe('help', () => {
-  it('prints usage with no arguments', () => {
-    const { stdout, status } = run([]);
+  it('runs init when called with no arguments', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-noargs-'));
+    try {
+      const { stdout, status } = run([], { cwd: tmpDir });
+      assert.equal(status, 0);
+      assert.match(stdout, /Initialized zspec scaffold/);
+      // .github/prompts/ should be scaffolded
+      assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'prompts', 'new-story.prompt.md')), 'new-story.prompt.md missing');
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('prints usage with --help', () => {
+    const { stdout, status } = run(['--help']);
     assert.equal(status, 0);
     assert.match(stdout, /zspec v\d+\.\d+\.\d+/);
     assert.match(stdout, /Usage:/);
@@ -32,12 +45,6 @@ describe('help', () => {
     assert.match(stdout, /use/);
     assert.match(stdout, /status/);
     assert.match(stdout, /mcp/);
-  });
-
-  it('prints usage with --help', () => {
-    const { stdout, status } = run(['--help']);
-    assert.equal(status, 0);
-    assert.match(stdout, /zspec v\d+\.\d+\.\d+/);
   });
 
   it('prints usage with -h', () => {
@@ -96,6 +103,14 @@ describe('init', () => {
       // copilot-instructions.md should have been scaffolded
       assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'copilot-instructions.md')), 'copilot-instructions.md missing');
 
+      // Copilot Chat prompt files should have been scaffolded
+      const promptsDir = path.join(tmpDir, '.github', 'prompts');
+      assert.ok(fs.existsSync(path.join(promptsDir, 'new-story.prompt.md')), 'new-story.prompt.md missing');
+      assert.ok(fs.existsSync(path.join(promptsDir, 'map-codebase.prompt.md')), 'map-codebase.prompt.md missing');
+      assert.ok(fs.existsSync(path.join(promptsDir, 'new-spec.prompt.md')), 'new-spec.prompt.md missing');
+      assert.ok(fs.existsSync(path.join(promptsDir, 'implement-story.prompt.md')), 'implement-story.prompt.md missing');
+      assert.ok(fs.existsSync(path.join(promptsDir, 'pr-description.prompt.md')), 'pr-description.prompt.md missing');
+
       // .zspec story templates should have been scaffolded
       assert.ok(fs.existsSync(path.join(tmpDir, '.zspec', 'templates', 'story.md')), '.zspec/templates/story.md missing');
       assert.ok(fs.existsSync(path.join(tmpDir, '.zspec', 'templates', 'codebase', 'STACK.md')), '.zspec/templates/codebase/STACK.md missing');
@@ -108,6 +123,8 @@ describe('init', () => {
       // init output should mention story and agent info
       assert.match(stdout, /codebase-mapper/);
       assert.match(stdout, /zspec story/);
+      assert.match(stdout, /\.github\/prompts/);
+      assert.match(stdout, /new-story/);
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
