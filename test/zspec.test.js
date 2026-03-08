@@ -151,6 +151,41 @@ describe('init', () => {
     }
   });
 
+  it('--upgrade keeps existing .zspec files and refreshes non-.zspec scaffold files', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-init-upgrade-'));
+    try {
+      fs.writeFileSync(
+        path.join(tmpDir, 'package.json'),
+        JSON.stringify({ name: 'test-project', version: '1.0.0' }, null, 2)
+      );
+
+      run(['init'], { cwd: tmpDir });
+
+      const zspecFile = path.join(tmpDir, '.zspec', 'templates', 'story.md');
+      const externalFile = path.join(tmpDir, '.github', 'AGENTS.md');
+      const pkgPath = path.join(tmpDir, 'package.json');
+
+      fs.writeFileSync(zspecFile, 'ZSPEC_SENTINEL');
+      fs.writeFileSync(externalFile, 'EXTERNAL_SENTINEL');
+
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      pkg.scripts ??= {};
+      pkg.scripts['spec:new'] = 'SENTINEL_SCRIPT';
+      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+
+      const { status } = run(['init', '--upgrade'], { cwd: tmpDir });
+      assert.equal(status, 0);
+
+      assert.equal(fs.readFileSync(zspecFile, 'utf8'), 'ZSPEC_SENTINEL');
+      assert.notEqual(fs.readFileSync(externalFile, 'utf8'), 'EXTERNAL_SENTINEL');
+
+      const upgradedPkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      assert.equal(upgradedPkg.scripts['spec:new'], 'node .zspec/run.mjs spec:new');
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
   it('works even when no package.json is present', () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-init-nopkg-'));
     try {

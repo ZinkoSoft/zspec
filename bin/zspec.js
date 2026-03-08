@@ -14,7 +14,7 @@ function die(msg, code = 1) {
 }
 
 function usage() {
-  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} [init] [--force]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init (default): scaffold repo conventions (.github/, .zspec/)\n  - new: create .zspec/specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: scaffold repo conventions (.github/, .zspec/)\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: check and install Serena MCP (via uv/uvx) interactively\n`);
+  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} [init] [--force|--upgrade]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init (default): scaffold repo conventions (.github/, .zspec/)\n  - init --upgrade: refresh non-.zspec scaffold files, keep existing .zspec files intact\n  - init --force: overwrite scaffold files everywhere (including .zspec)\n  - new: create .zspec/specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: scaffold repo conventions (.github/, .zspec/)\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: check and install Serena MCP (via uv/uvx) interactively\n`);
 }
 
 function repoRoot() {
@@ -44,16 +44,24 @@ function writeText(p, content, force = false) {
   return true;
 }
 
-function copyDir(srcDir, dstDir, force = false) {
+function isUnderZspec(relPath) {
+  return relPath === '.zspec' || relPath.startsWith(`.zspec${path.sep}`);
+}
+
+function copyDir(srcDir, dstDir, options = {}, relBase = '') {
+  const { force = false, upgrade = false } = options;
   ensureDir(dstDir);
   for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
     const src = path.join(srcDir, entry.name);
     const dst = path.join(dstDir, entry.name);
+    const relPath = relBase ? path.join(relBase, entry.name) : entry.name;
+
     if (entry.isDirectory()) {
-      copyDir(src, dst, force);
+      copyDir(src, dst, options, relPath);
     } else {
       const content = fs.readFileSync(src);
-      if (exists(dst) && !force) continue;
+      const overwrite = force || (upgrade && !isUnderZspec(relPath));
+      if (exists(dst) && !overwrite) continue;
       ensureDir(path.dirname(dst));
       fs.writeFileSync(dst, content);
     }
@@ -131,10 +139,13 @@ function ensureVscodeMcpSerena(root) {
 
 function cmd_init(args) {
   const force = args.includes('--force');
+  const upgrade = args.includes('--upgrade');
+  if (force && upgrade) die('use either --force or --upgrade, not both.');
+
   const root = repoRoot();
   const tpl = templateRoot();
 
-  copyDir(tpl, root, force);
+  copyDir(tpl, root, { force, upgrade });
 
   // If package.json exists, add scripts (non-destructive unless --force)
   const pkgPath = path.join(root, 'package.json');
@@ -158,7 +169,7 @@ function cmd_init(args) {
         "spec:reject": "node .zspec/run.mjs spec:reject"
       };
       for (const [k, v] of Object.entries(scripts)) {
-        if (!pkg.scripts[k] || force) pkg.scripts[k] = v;
+        if (!pkg.scripts[k] || force || upgrade) pkg.scripts[k] = v;
       }
       if (force) {
         pkg.devDependencies ??= {};
@@ -180,7 +191,8 @@ function cmd_init(args) {
   // Ensure .vscode/mcp.json has a Serena entry
   ensureVscodeMcpSerena(root);
 
-  console.log(`\n✅ Initialized ${PKG} scaffold in ${root}`);
+  const mode = force ? 'force' : (upgrade ? 'upgrade' : 'init');
+  console.log(`\n✅ Initialized ${PKG} scaffold in ${root} (${mode} mode)`);
   console.log(`\nStory layout (.zspec-style, one dir per story):`);
   console.log(`  .zspec/stories/<story-slug>/   ← one directory per story`);
   console.log(`    story.md     ← user story, acceptance criteria (zspec story)`);

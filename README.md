@@ -94,7 +94,7 @@ zspec mcp
 ### `init`
 
 ```
-zspec init [--force]
+zspec init [--force|--upgrade]
 ```
 
 Scaffolds the following into your current working directory:
@@ -117,7 +117,11 @@ Scaffolds the following into your current working directory:
 
 If a `package.json` is present in the repo root, `init` also injects zspec and spec npm scripts (see [npm scripts](#npm-scripts)).
 
-Use `--force` to overwrite existing files (default: skip files that already exist).
+`init` modes:
+
+- default: only creates missing scaffold files (does not overwrite existing files)
+- `--upgrade`: updates scaffold files outside `.zspec/` and keeps existing `.zspec/` files intact
+- `--force`: overwrites scaffold files everywhere, including `.zspec/`
 
 ---
 
