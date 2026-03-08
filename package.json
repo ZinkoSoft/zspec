@@ -1,6 +1,6 @@
 {
   "name": "zspec",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "CLI scaffold combining the zspec workflow + GitHub Speckit spec management + Serena-first MCP config",
   "type": "module",
   "bin": {
@@ -14,7 +14,15 @@
     "node": ">=18"
   },
   "license": "MIT",
-  "keywords": ["mcp", "serena", "agent", "copilot", "spec", "speckit", "zspec"],
+  "keywords": [
+    "mcp",
+    "serena",
+    "agent",
+    "copilot",
+    "spec",
+    "speckit",
+    "zspec"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ZinkoSoft/zspec"
