@@ -46,6 +46,28 @@ After implementing:
 2. Record decisions and tradeoffs in `notes.md`
 3. Update `context.md` if architectural understanding changed
 
+## Clean Code
+
+- **DRY** — Do not repeat yourself. Extract shared logic into well-named functions or classes
+- **YAGNI** — Do not build features or abstractions that are not yet needed
+- **KISS** — Keep solutions simple. Prefer straightforward implementations over clever ones
+- **Single Responsibility** — Each class and function does one thing well
+- **Separation of Concerns** — Controllers handle HTTP, services handle business logic, repositories handle data access. No layer bleeds into another
+- **Clear Naming** — All method names, variable names, and class names must be self-documenting. A reader should understand purpose without needing comments
+- **Clear Comments** — Only add comments where the *why* is not obvious from the code. Never comment the *what* — the code itself should express that. When a comment is needed, make it precise and useful
+- **Small Functions** — Functions should do one thing. If a function needs a comment explaining what it does, it should be broken into smaller, well-named functions instead
+- **No Magic Numbers** — Use named constants for all non-obvious values
+- **Fail Fast** — Validate inputs early. Return or throw at the top of functions rather than nesting deeply
+
+## Test-Driven Development
+
+- Write tests alongside implementation, not as an afterthought
+- Each new feature or bugfix must include corresponding tests
+- Security-critical behavior requires dedicated security tests
+- Use descriptive test names that read as specifications (e.g., `shouldRejectTokenWhenUsedFromDifferentIpAddress`)
+- Keep tests independent — no shared mutable state between tests
+- Prefer real dependencies via TestContainers over mocks for integration tests
+
 ## Agent Usage
 
 Use the agents in `.github/agents/` for codebase analysis:
