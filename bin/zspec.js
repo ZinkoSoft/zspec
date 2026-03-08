@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import readline from 'node:readline';
 import { execSync } from 'node:child_process';
 
 const PKG = 'zspec';
@@ -13,7 +14,7 @@ function die(msg, code = 1) {
 }
 
 function usage() {
-  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} [init] [--force]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init (default): scaffold repo conventions (.github/, .zspec/)\n  - new: create .zspec/specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: create .zspec/stories/<slug>/ with story.md, context.md, tasks.md, notes.md, codebase/\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: print Serena MCP client snippets and run commands\n`);
+  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} [init] [--force]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init (default): scaffold repo conventions (.github/, .zspec/)\n  - new: create .zspec/specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: create .zspec/stories/<slug>/ with story.md, context.md, tasks.md, notes.md, codebase/\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: check and install Serena MCP (via uv/uvx) interactively\n`);
 }
 
 function repoRoot() {
@@ -76,6 +77,11 @@ function slugify(s) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 60) || 'feature';
+}
+
+function prompt(question) {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise(resolve => rl.question(question, answer => { rl.close(); resolve(answer.trim()); }));
 }
 
 function safeSh(cmd) {
@@ -363,56 +369,119 @@ function cmd_status() {
   console.log('Tip: run `node .zspec/run.mjs repo:summary` to give agents instant context.');
 }
 
-function cmd_mcp() {
-  const root = repoRoot();
-  console.log(`\n🧠 Serena MCP (default)\n`);
-  console.log(`This scaffold includes .zspec/mcp/serena.json and .zspec/scripts/serena.mjs.`);
-  console.log(`Serena can be launched via stdio subprocess or as an HTTP/SSE server; clients differ. Serena docs: https://oraios.github.io/serena/ (see "Running Serena" and "Connecting Your MCP Client").`);
-  console.log(`\nRecommended (most reliable) install/run path is via Python uv/uvx (per many Serena guides), but you can adapt.`);
+async function cmd_mcp() {
+  console.log('\n🧠 Serena MCP Setup\n');
 
-  console.log(`\n1) Stdio mode (client launches Serena as subprocess)`);
-  console.log(`   Command (example):`);
-  console.log(`     node .zspec/scripts/serena.mjs stdio`);
+  // ── Step 1: check for uvx ────────────────────────────────────────────────
+  const hasUvx = !!safeSh('which uvx 2>/dev/null');
 
-  console.log(`\n2) HTTP/SSE mode (you start Serena; client connects to URL)`);
-  console.log(`   Start server:`);
-  console.log(`     node .zspec/scripts/serena.mjs http --port 9123`);
-  console.log(`   Then configure client server URL to: http://127.0.0.1:9123`);
+  if (!hasUvx) {
+    console.log('Serena MCP requires uv/uvx to run. uv is a fast Python package runner');
+    console.log('that installs and executes tools like Serena in an isolated environment,');
+    console.log('without touching your global Python setup.\n');
+    console.log('zspec uses it to launch Serena MCP — which gives AI assistants like GitHub');
+    console.log('Copilot the ability to navigate your codebase symbolically:\n');
+    console.log('  • search for functions, classes, and symbols by name');
+    console.log('  • make targeted edits without reading entire files');
+    console.log('  • understand imports, references, and file structure\n');
 
-  console.log(`\nNote:`);
-  console.log(`- .zspec/scripts/serena.mjs uses SERENA_CMD env var if set (e.g., 'uvx serena' or 'serena').`);
-  console.log(`- If Serena isn't installed yet, install it first (see Serena docs).`);
+    const answer = await prompt('uvx is not installed. Install uv now? [y/N] ');
+    if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
+      console.log('\nInstalling uv...\n');
+      try {
+        execSync('curl -LsSf https://astral.sh/uv/install.sh | sh', { stdio: 'inherit' });
+        console.log('\n✅ uv installed.');
+        console.log('   Restart your terminal (or run: source ~/.zshrc / source ~/.bashrc)');
+        console.log('   then run `npx zspec mcp` again to continue.\n');
+      } catch {
+        console.log('\n❌ Installation failed.');
+        console.log('   Install manually: https://docs.astral.sh/uv/getting-started/installation/\n');
+      }
+    } else {
+      console.log('\nSkipped. Install uv when ready: https://docs.astral.sh/uv/getting-started/installation/');
+      console.log('Then run `npx zspec mcp` again.\n');
+    }
+    return;
+  }
+
+  console.log('✅ uvx is available.\n');
+
+  // ── Step 2: check if serena is installed as a uv tool ───────────────────
+  const toolList = safeSh('uv tool list 2>/dev/null') || '';
+  const serenaInstalled = toolList.toLowerCase().includes('serena');
+
+  if (!serenaInstalled) {
+    console.log('Serena MCP is not yet installed.\n');
+    console.log('Serena is a Model Context Protocol (MCP) server that connects AI assistants');
+    console.log('to your codebase. Without it, agents read whole files to find code. With');
+    console.log('Serena, they can:\n');
+    console.log('  • jump directly to a symbol (function, class, variable) by name');
+    console.log('  • find all references to a symbol across the entire codebase');
+    console.log('  • make precise, symbol-scoped edits using fewer tokens');
+    console.log('  • understand architecture without reading every file\n');
+
+    const answer = await prompt('Install Serena MCP now? (uv tool install serena) [y/N] ');
+    if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
+      console.log('\nInstalling Serena MCP...\n');
+      try {
+        execSync('uv tool install serena', { stdio: 'inherit' });
+        console.log('\n✅ Serena MCP installed.\n');
+      } catch {
+        console.log('\n❌ Installation failed. Try manually:');
+        console.log('   uv tool install serena');
+        console.log('   Serena docs: https://oraios.github.io/serena/\n');
+        return;
+      }
+    } else {
+      console.log('\nSkipped. Run `npx zspec mcp` again when ready.\n');
+      return;
+    }
+  } else {
+    console.log('✅ Serena MCP is installed.\n');
+  }
+
+  // ── Both ready — show client config ─────────────────────────────────────
+  console.log('Serena is ready. Configure your AI client (e.g. VS Code, Cursor, Claude Desktop):\n');
+  console.log('  Stdio mode (recommended — client spawns Serena):');
+  console.log('    command: uvx');
+  console.log('    args:    ["serena", "--transport", "stdio", "--project-root", "/path/to/project"]\n');
+  console.log('  Or use the scaffold helper:');
+  console.log('    node .zspec/scripts/serena.mjs stdio');
+  console.log('    node .zspec/scripts/serena.mjs http --port 9123\n');
+  console.log('  Full docs: https://oraios.github.io/serena/');
 }
 
-const argv = process.argv.slice(2);
-const cmd = argv.shift();
+(async () => {
+  const argv = process.argv.slice(2);
+  const cmd = argv.shift();
 
-if (cmd === '--help' || cmd === '-h') {
-  usage();
-  process.exit(0);
-}
-
-switch (cmd) {
-  case undefined:
-  case 'init':
-    cmd_init(argv);
-    break;
-  case 'new':
-    cmd_new(argv);
-    break;
-  case 'story':
-    cmd_story(argv);
-    break;
-  case 'use':
-    cmd_use(argv);
-    break;
-  case 'status':
-    cmd_status();
-    break;
-  case 'mcp':
-    cmd_mcp();
-    break;
-  default:
+  if (cmd === '--help' || cmd === '-h') {
     usage();
-    die(`unknown command: ${cmd}`);
-}
+    process.exit(0);
+  }
+
+  switch (cmd) {
+    case undefined:
+    case 'init':
+      cmd_init(argv);
+      break;
+    case 'new':
+      cmd_new(argv);
+      break;
+    case 'story':
+      cmd_story(argv);
+      break;
+    case 'use':
+      cmd_use(argv);
+      break;
+    case 'status':
+      cmd_status();
+      break;
+    case 'mcp':
+      await cmd_mcp();
+      break;
+    default:
+      usage();
+      die(`unknown command: ${cmd}`);
+  }
+})().catch(e => die(e.message));
