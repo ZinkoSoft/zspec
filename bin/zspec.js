@@ -14,7 +14,7 @@ function die(msg, code = 1) {
 }
 
 function usage() {
-  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} [init] [--force]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init (default): scaffold repo conventions (.github/, .zspec/)\n  - new: create .zspec/specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  console.log(`  - story: scaffold repo conventions (.github/, .zspec/)`);\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: check and install Serena MCP (via uv/uvx) interactively\n`);
+  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} [init] [--force]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init (default): scaffold repo conventions (.github/, .zspec/)\n  - new: create .zspec/specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: scaffold repo conventions (.github/, .zspec/)\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: check and install Serena MCP (via uv/uvx) interactively\n`);
 }
 
 function repoRoot() {
