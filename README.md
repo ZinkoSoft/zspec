@@ -16,13 +16,16 @@ On top of these two, **zspec** wires in [**Serena MCP**](https://oraios.github.i
 - [Quick start](#quick-start)
 - [Commands](#commands)
   - [init](#init)
+  - [story](#story)
   - [new](#new)
   - [use](#use)
   - [status](#status)
   - [mcp](#mcp)
 - [Repo layout after init](#repo-layout-after-init)
+- [The story workflow](#the-story-workflow)
 - [The GSD workflow](#the-gsd-workflow)
 - [The Speckit workflow](#the-speckit-workflow)
+- [Copilot custom agents](#copilot-custom-agents)
 - [Serena MCP integration](#serena-mcp-integration)
 - [Skills](#skills)
 - [npm scripts](#npm-scripts)
@@ -66,15 +69,21 @@ npm install --save-dev zspec
 # 1. Scaffold conventions into your repo
 npx zspec init
 
-# 2. Create a spec for a new feature
+# 2. Create a story for a new feature
+zspec story "add billing"
+
+# 3. Run @codebase-mapper in Copilot Chat to analyze the codebase
+# @codebase-mapper story-slug: add-billing
+
+# 4. Implement tasks in .zspec/stories/add-billing/tasks.md
+
+# 5. Or use the older spec-based workflow
 zspec new "add billing"
 
-# 3. Paste the printed Copilot prompt into your AI assistant
-
-# 4. Check status at any time
+# 6. Check status at any time
 zspec status
 
-# 5. Set up Serena MCP in your client
+# 7. Set up Serena MCP in your client
 zspec mcp
 ```
 
@@ -92,7 +101,11 @@ Scaffolds the following into your current working directory:
 
 | Path | Purpose |
 |------|---------|
-| `AGENTS.md` | Agent operating manual (default loop, rules, Serena guidance) |
+| `AGENTS.md` | Agent operating manual (workflows, rules, agent guide) |
+| `.github/copilot-instructions.md` | Repo-wide Copilot instructions |
+| `.github/agents/` | Copilot custom agent definitions (5 agents) |
+| `.zspec/stories/` | Story storage root |
+| `.zspec/templates/` | Story and codebase doc templates |
 | `specs/0000-template/` | Spec/plan/tasks templates for new features |
 | `gsd/run.mjs` | GSD task runner (spec lifecycle, git helpers, repo summary) |
 | `gsd/logs/progress.md` | Progress log appended by agents after each session |
@@ -101,11 +114,39 @@ Scaffolds the following into your current working directory:
 | `mcp/serena.json` | Serena MCP client config |
 | `scripts/serena.mjs` | Serena launcher script (stdio or HTTP/SSE) |
 | `skills/` | Optional skill modules for specialized tasks |
-| `.github/` | PR template + issue templates (feature, bug) |
 
 If a `package.json` is present in the repo root, `init` also injects GSD and spec npm scripts (see [npm scripts](#npm-scripts)).
 
 Use `--force` to overwrite existing files (default: skip files that already exist).
+
+---
+
+### `story`
+
+```
+zspec story <story-name>
+```
+
+Creates a new story scaffold under `.zspec/stories/<story-slug>/`.
+
+**What it does:**
+
+1. Slugifies the story name (lowercase, hyphens, max 60 chars).
+2. Creates the story directory with all required files.
+3. Prints a **Copilot-ready prompt** to kick off codebase analysis with `@codebase-mapper`.
+
+**Example:**
+
+```bash
+zspec story "user authentication"
+# Creates: .zspec/stories/user-authentication/
+#   story.md · context.md · tasks.md · notes.md
+#   codebase/STACK.md · INTEGRATIONS.md · ARCHITECTURE.md
+#   codebase/STRUCTURE.md · CONVENTIONS.md · TESTING.md · CONCERNS.md
+# Prints: @codebase-mapper invocation prompt
+```
+
+The `codebase/` files are initially empty placeholders. Run `@codebase-mapper story-slug: <slug>` in Copilot Chat to populate them.
 
 ---
 
@@ -197,37 +238,101 @@ See the [Serena docs](https://oraios.github.io/serena/) for client-specific conf
 
 ```
 .
-├── AGENTS.md                          # Agent operating manual
+├── AGENTS.md                               # Agent operating manual
+├── .github/
+│   ├── copilot-instructions.md             # Repo-wide Copilot instructions
+│   ├── agents/
+│   │   ├── codebase-mapper.agent.md        # Orchestrator: full codebase analysis
+│   │   ├── stack-mapper.agent.md           # Stack and integrations analysis
+│   │   ├── arch-mapper.agent.md            # Architecture and structure analysis
+│   │   ├── quality-mapper.agent.md         # Conventions and testing analysis
+│   │   └── concerns-mapper.agent.md        # Technical concerns analysis
+│   ├── ISSUE_TEMPLATE/
+│   └── pull_request_template.md
+├── .zspec/
+│   ├── templates/
+│   │   ├── story.md                        # Story template
+│   │   ├── context.md                      # Context template
+│   │   ├── tasks.md                        # Tasks template
+│   │   ├── notes.md                        # Notes template
+│   │   └── codebase/
+│   │       ├── STACK.md
+│   │       ├── INTEGRATIONS.md
+│   │       ├── ARCHITECTURE.md
+│   │       ├── STRUCTURE.md
+│   │       ├── CONVENTIONS.md
+│   │       ├── TESTING.md
+│   │       └── CONCERNS.md
+│   └── stories/
+│       └── <story-slug>/                   # One directory per story (zspec story)
+│           ├── story.md
+│           ├── context.md
+│           ├── tasks.md
+│           ├── notes.md
+│           └── codebase/
+│               ├── STACK.md
+│               ├── INTEGRATIONS.md
+│               ├── ARCHITECTURE.md
+│               ├── STRUCTURE.md
+│               ├── CONVENTIONS.md
+│               ├── TESTING.md
+│               └── CONCERNS.md
 ├── specs/
-│   ├── 0000-template/                 # Template files for new specs
+│   ├── 0000-template/                      # Template files for new specs
 │   │   ├── spec.md
 │   │   ├── plan.md
 │   │   └── tasks.md
-│   ├── 0001-add-billing/              # One directory per feature
-│   │   ├── spec.md                    # Requirements (zspec new)
-│   │   ├── plan.md                    # Technical plan (spec:add-plan)
-│   │   └── tasks.md                   # Task breakdown (spec:add-tasks)
-│   └── 0002-auth-flow/
-│       └── spec.md
+│   └── 0001-add-billing/                   # One directory per feature
+│       ├── spec.md
+│       ├── plan.md
+│       └── tasks.md
 ├── gsd/
-│   ├── run.mjs                        # GSD task runner
-│   ├── logs/
-│   │   └── progress.md                # Append-only progress log
-│   ├── checklists/
-│   │   └── definition-of-done.md
-│   ├── memory/
-│   │   └── constitution.md            # Project principles
-│   └── playbooks/
-│       └── add-endpoint.md
-├── mcp/
-│   └── serena.json                    # Serena MCP client config
-├── scripts/
-│   └── serena.mjs                     # Serena launcher
+│   ├── run.mjs
+│   ├── logs/progress.md
+│   ├── checklists/definition-of-done.md
+│   ├── memory/constitution.md
+│   └── playbooks/add-endpoint.md
+├── mcp/serena.json
+├── scripts/serena.mjs
 └── skills/
     ├── gsd-core/SKILL.md
     ├── speckit-core/SKILL.md
     └── frontend-design/SKILL.md
 ```
+
+---
+
+## The story workflow
+
+The story workflow organizes work by user story with Copilot custom agents:
+
+**1. Create a story:**
+
+```bash
+zspec story "user authentication"
+# → .zspec/stories/user-authentication/
+```
+
+**2. Analyze the codebase:**
+
+In Copilot Chat, invoke the orchestrator agent:
+
+```
+@codebase-mapper story-slug: user-authentication
+```
+
+This delegates to four specialized mapper agents and populates the `codebase/` folder with story-scoped documentation.
+
+**3. Implement:**
+
+- Follow the checklist in `tasks.md`
+- Reference `codebase/ARCHITECTURE.md`, `codebase/CONCERNS.md`, etc.
+- Record decisions in `notes.md`
+- Update `tasks.md` as work completes
+
+**4. Review:**
+
+The review checklist in `tasks.md` ensures all acceptance criteria from `story.md` are met.
 
 ---
 
@@ -297,6 +402,36 @@ git branch -d 0001-user-authentication
 
 ```bash
 node gsd/run.mjs spec:reject      # delete branch; spec files kept for reference
+```
+
+---
+
+## Copilot custom agents
+
+`zspec init` scaffolds five Copilot-compatible agent files in `.github/agents/`. Use them in Copilot Chat with `@agent-name`.
+
+| Agent | Purpose | User-Invocable |
+|-------|---------|----------------|
+| `@codebase-mapper` | Orchestrates full codebase analysis for a story | ✅ |
+| `@stack-mapper` | Analyzes tech stack and third-party integrations | ✅ |
+| `@arch-mapper` | Analyzes architecture, layers, and file structure | ✅ |
+| `@quality-mapper` | Analyzes conventions and testing patterns | ✅ |
+| `@concerns-mapper` | Identifies technical concerns, debt, and risks | ✅ |
+
+**Orchestration pattern:**
+
+```
+@codebase-mapper
+  → @stack-mapper     → codebase/STACK.md, INTEGRATIONS.md
+  → @arch-mapper      → codebase/ARCHITECTURE.md, STRUCTURE.md
+  → @quality-mapper   → codebase/CONVENTIONS.md, TESTING.md
+  → @concerns-mapper  → codebase/CONCERNS.md
+```
+
+**Example usage:**
+
+```
+@codebase-mapper story-slug: add-billing
 ```
 
 ---
