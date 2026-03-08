@@ -79,8 +79,8 @@ describe('init', () => {
 
       // Core template directories should have been copied
       assert.ok(fs.existsSync(path.join(tmpDir, 'specs', '0000-template')), 'specs/0000-template missing');
-      assert.ok(fs.existsSync(path.join(tmpDir, 'gsd')), 'gsd/ missing');
-      assert.ok(fs.existsSync(path.join(tmpDir, 'gsd', 'memory')), 'gsd/memory/ missing');
+      assert.ok(fs.existsSync(path.join(tmpDir, 'zspec')), 'zspec/ missing');
+      assert.ok(fs.existsSync(path.join(tmpDir, 'zspec', 'memory')), 'zspec/memory/ missing');
       assert.ok(fs.existsSync(path.join(tmpDir, 'AGENTS.md')), 'AGENTS.md missing');
 
       // .zspec/ story directories should have been created
@@ -103,7 +103,7 @@ describe('init', () => {
       // Scripts should have been injected into package.json
       const pkg = JSON.parse(fs.readFileSync(path.join(tmpDir, 'package.json'), 'utf8'));
       assert.ok(pkg.scripts['spec:new'], 'spec:new script missing');
-      assert.ok(pkg.scripts['gsd:repo'], 'gsd:repo script missing');
+      assert.ok(pkg.scripts['zspec:repo'], 'zspec:repo script missing');
 
       // init output should mention story and agent info
       assert.match(stdout, /codebase-mapper/);
@@ -401,11 +401,11 @@ describe('status', () => {
     }
   });
 
-  it('shows tip about gsd/run.mjs', () => {
+  it('shows tip about zspec/run.mjs', () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-status-tip-'));
     try {
       const { stdout } = run(['status'], { cwd: tmpDir });
-      assert.match(stdout, /gsd\/run\.mjs/);
+      assert.match(stdout, /zspec\/run\.mjs/);
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
@@ -414,8 +414,8 @@ describe('status', () => {
   it('prints recent progress log when present', () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-status-log-'));
     try {
-      fs.mkdirSync(path.join(tmpDir, 'gsd', 'logs'), { recursive: true });
-      fs.writeFileSync(path.join(tmpDir, 'gsd', 'logs', 'progress.md'), '## 2024-01-01\n- did a thing\n');
+      fs.mkdirSync(path.join(tmpDir, 'zspec', 'logs'), { recursive: true });
+      fs.writeFileSync(path.join(tmpDir, 'zspec', 'logs', 'progress.md'), '## 2024-01-01\n- did a thing\n');
       const { stdout } = run(['status'], { cwd: tmpDir });
       assert.match(stdout, /Recent progress log/);
       assert.match(stdout, /did a thing/);

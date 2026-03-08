@@ -2,7 +2,7 @@
 
 **zspec** is a CLI scaffold that combines two complementary workflows into one tool:
 
-- **GSD** (*GetShitDone*) — a pragmatic, log-driven productivity workflow that keeps teams moving with small diffs, explicit assumptions, and continuous progress logging.
+- **zspec workflow** — a pragmatic, log-driven productivity workflow that keeps teams moving with small diffs, explicit assumptions, and continuous progress logging.
 - **GitHub Speckit** — a spec-first, directory-per-feature specification system inspired by GitHub's internal [spec-kit](https://github.com/github/spec-kit), where every feature lives in its own `specs/NNNN-slug/` directory and its lifecycle is tracked through git branches.
 
 On top of these two, **zspec** wires in [**Serena MCP**](https://oraios.github.io/serena/) — a Model Context Protocol server for AI agents — so that Copilot, Claude, or any MCP-capable agent can navigate and edit your codebase with structured tools instead of raw file reads.
@@ -23,7 +23,7 @@ On top of these two, **zspec** wires in [**Serena MCP**](https://oraios.github.i
   - [mcp](#mcp)
 - [Repo layout after init](#repo-layout-after-init)
 - [The story workflow](#the-story-workflow)
-- [The GSD workflow](#the-gsd-workflow)
+- [The zspec workflow](#the-zspec-workflow)
 - [The Speckit workflow](#the-speckit-workflow)
 - [Copilot custom agents](#copilot-custom-agents)
 - [Serena MCP integration](#serena-mcp-integration)
@@ -107,15 +107,15 @@ Scaffolds the following into your current working directory:
 | `.zspec/stories/` | Story storage root |
 | `.zspec/templates/` | Story and codebase doc templates |
 | `specs/0000-template/` | Spec/plan/tasks templates for new features |
-| `gsd/run.mjs` | GSD task runner (spec lifecycle, git helpers, repo summary) |
-| `gsd/logs/progress.md` | Progress log appended by agents after each session |
-| `gsd/checklists/definition-of-done.md` | Checklist agents verify before closing a feature |
-| `gsd/memory/` | Persistent agent memory (constitution, project principles) |
+| `zspec/run.mjs` | zspec task runner (spec lifecycle, git helpers, repo summary) |
+| `zspec/logs/progress.md` | Progress log appended by agents after each session |
+| `zspec/checklists/definition-of-done.md` | Checklist agents verify before closing a feature |
+| `zspec/memory/` | Persistent agent memory (constitution, project principles) |
 | `mcp/serena.json` | Serena MCP client config |
 | `scripts/serena.mjs` | Serena launcher script (stdio or HTTP/SSE) |
 | `skills/` | Optional skill modules for specialized tasks |
 
-If a `package.json` is present in the repo root, `init` also injects GSD and spec npm scripts (see [npm scripts](#npm-scripts)).
+If a `package.json` is present in the repo root, `init` also injects zspec and spec npm scripts (see [npm scripts](#npm-scripts)).
 
 Use `--force` to overwrite existing files (default: skip files that already exist).
 
@@ -189,7 +189,7 @@ Prints a skill activation prompt for your AI assistant. Skills live in `skills/<
 
 | Skill | Purpose |
 |-------|---------|
-| `gsd-core` | Small diffs, verification-first, progress logging |
+| `zspec-core` | Small diffs, verification-first, progress logging |
 | `speckit-core` | Clear specs with goals, non-goals, and acceptance criteria |
 | `frontend-design` | UI/component/layout conventions |
 
@@ -215,7 +215,7 @@ Summarizes the current state of the repo:
   - `○ active` — branch exists but not yet merged
   - `✓ done` — branch merged into `main`/`master`
   - `no-branch` — spec files exist but no associated git branch
-- Prints the last 20 lines of `gsd/logs/progress.md` if present.
+- Prints the last 20 lines of `zspec/logs/progress.md` if present.
 
 ---
 
@@ -286,7 +286,7 @@ See the [Serena docs](https://oraios.github.io/serena/) for client-specific conf
 │       ├── spec.md
 │       ├── plan.md
 │       └── tasks.md
-├── gsd/
+├── zspec/
 │   ├── run.mjs
 │   ├── logs/progress.md
 │   ├── checklists/definition-of-done.md
@@ -295,7 +295,7 @@ See the [Serena docs](https://oraios.github.io/serena/) for client-specific conf
 ├── mcp/serena.json
 ├── scripts/serena.mjs
 └── skills/
-    ├── gsd-core/SKILL.md
+    ├── zspec-core/SKILL.md
     ├── speckit-core/SKILL.md
     └── frontend-design/SKILL.md
 ```
@@ -336,27 +336,27 @@ The review checklist in `tasks.md` ensures all acceptance criteria from `story.m
 
 ---
 
-## The GSD workflow
+## The zspec workflow
 
-GSD (*GetShitDone*) is a lightweight loop designed to keep AI-assisted development moving without thrash:
+zspec is a lightweight loop designed to keep AI-assisted development moving without thrash:
 
 1. **Load context** — read the active spec(s) and the Definition of Done.
 2. **Ask bounded questions** — at most 7 critical questions; proceed with explicit assumptions if info is missing.
 3. **Plan** — 3–7 PR-sized steps (small, reviewable, easy to roll back).
 4. **Execute** — prefer Serena MCP tools for symbol lookup, references, and safe edits.
 5. **Verify** — run `tests`, `lint`, `typecheck` if present; provide a manual verification plan otherwise.
-6. **Log** — append a short entry to `gsd/logs/progress.md`: what changed, how to verify, any risks.
+6. **Log** — append a short entry to `zspec/logs/progress.md`: what changed, how to verify, any risks.
 
-The GSD task runner (`node gsd/run.mjs`) provides spec lifecycle commands:
+The zspec task runner (`node zspec/run.mjs`) provides spec lifecycle commands:
 
 ```bash
-node gsd/run.mjs spec:new "feature name"   # create spec
-node gsd/run.mjs spec:add-plan             # scaffold plan.md
-node gsd/run.mjs spec:add-tasks            # scaffold tasks.md
-node gsd/run.mjs spec:list                 # list all specs with status
-node gsd/run.mjs spec:done                 # merge instructions
-node gsd/run.mjs repo:summary              # instant repo context for agents
-node gsd/run.mjs git:pr-body               # generate PR body from active spec
+node zspec/run.mjs spec:new "feature name"   # create spec
+node zspec/run.mjs spec:add-plan             # scaffold plan.md
+node zspec/run.mjs spec:add-tasks            # scaffold tasks.md
+node zspec/run.mjs spec:list                 # list all specs with status
+node zspec/run.mjs spec:done                 # merge instructions
+node zspec/run.mjs repo:summary              # instant repo context for agents
+node zspec/run.mjs git:pr-body               # generate PR body from active spec
 ```
 
 ---
@@ -386,14 +386,14 @@ zspec new "user authentication"
 **Adding a plan and tasks:**
 
 ```bash
-node gsd/run.mjs spec:add-plan    # creates specs/0001-.../plan.md
-node gsd/run.mjs spec:add-tasks   # creates specs/0001-.../tasks.md
+node zspec/run.mjs spec:add-plan    # creates specs/0001-.../plan.md
+node zspec/run.mjs spec:add-tasks   # creates specs/0001-.../tasks.md
 ```
 
 **Completing a feature:**
 
 ```bash
-node gsd/run.mjs spec:done        # switch to main + print merge instructions
+node zspec/run.mjs spec:done        # switch to main + print merge instructions
 # Merge the branch, then:
 git branch -d 0001-user-authentication
 ```
@@ -401,7 +401,7 @@ git branch -d 0001-user-authentication
 **Rejecting a feature:**
 
 ```bash
-node gsd/run.mjs spec:reject      # delete branch; spec files kept for reference
+node zspec/run.mjs spec:reject      # delete branch; spec files kept for reference
 ```
 
 ---
@@ -496,26 +496,26 @@ EOF
 
 | Script | Command |
 |--------|---------|
-| `spec:new` | `node gsd/run.mjs spec:new` |
-| `spec:list` | `node gsd/run.mjs spec:list` |
-| `spec:init` | `node gsd/run.mjs spec:init` |
-| `spec:add-plan` | `node gsd/run.mjs spec:add-plan` |
-| `spec:add-tasks` | `node gsd/run.mjs spec:add-tasks` |
-| `spec:commit` | `node gsd/run.mjs spec:commit` |
-| `spec:done` | `node gsd/run.mjs spec:done` |
-| `spec:reject` | `node gsd/run.mjs spec:reject` |
-| `gsd:repo` | `node gsd/run.mjs repo:summary` |
-| `gsd:diff` | `node gsd/run.mjs git:diff-summary` |
-| `gsd:plan` | `node gsd/run.mjs spec:plan` |
-| `gsd:pr` | `node gsd/run.mjs git:pr-body` |
-| `gsd:check` | `node gsd/run.mjs checks:all` |
+| `spec:new` | `node zspec/run.mjs spec:new` |
+| `spec:list` | `node zspec/run.mjs spec:list` |
+| `spec:init` | `node zspec/run.mjs spec:init` |
+| `spec:add-plan` | `node zspec/run.mjs spec:add-plan` |
+| `spec:add-tasks` | `node zspec/run.mjs spec:add-tasks` |
+| `spec:commit` | `node zspec/run.mjs spec:commit` |
+| `spec:done` | `node zspec/run.mjs spec:done` |
+| `spec:reject` | `node zspec/run.mjs spec:reject` |
+| `zspec:repo` | `node zspec/run.mjs repo:summary` |
+| `zspec:diff` | `node zspec/run.mjs git:diff-summary` |
+| `zspec:plan` | `node zspec/run.mjs spec:plan` |
+| `zspec:pr` | `node zspec/run.mjs git:pr-body` |
+| `zspec:check` | `node zspec/run.mjs checks:all` |
 
 Usage:
 
 ```bash
 npm run spec:new -- "my feature"
 npm run spec:list
-npm run gsd:repo
+npm run zspec:repo
 ```
 
 ---
