@@ -5,6 +5,10 @@ tools:
   - read_file
   - list_dir
   - search_files
+  - mcp_oraios_serena_find_symbol
+  - mcp_oraios_serena_get_symbols_overview
+  - mcp_oraios_serena_replace_symbol_body
+  - mcp_oraios_serena_insert_after_symbol
   - edit_file
   - run_in_terminal
 ---
@@ -26,6 +30,7 @@ Drive end-to-end implementation of a `.zspec` story following the project's engi
 4. Ask at most **7 critical questions** — only questions that are truly blocking. State explicit assumptions for everything else.
 5. Produce a short **implementation plan** (3–7 numbered steps).
 6. Implement **Step 1** as a small, focused, reviewable diff.
+   - **Prefer Serena MCP tools** for all code edits: use `replace_symbol_body` to replace a function/method/class, `insert_after_symbol` to add new code after an existing symbol. Use `edit_file` only as a fallback when the change doesn't map cleanly to a symbol.
 7. After changes:
    - Run available checks (tests, lint, typecheck)
    - Update `tasks.md` to mark completed items

@@ -9,6 +9,9 @@ tools:
   - read_file
   - list_dir
   - search_files
+  - create_file
+  - mcp_oraios_serena_find_symbol
+  - mcp_oraios_serena_replace_symbol_body
   - run_in_terminal
 model: gpt-4o
 user-invocable: true

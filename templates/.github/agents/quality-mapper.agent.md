@@ -9,6 +9,9 @@ tools:
   - read_file
   - list_dir
   - search_files
+  - create_file
+  - mcp_oraios_serena_find_symbol
+  - mcp_oraios_serena_replace_symbol_body
 model: gpt-4o
 user-invocable: true
 ---
@@ -20,6 +23,8 @@ repository and produce documentation about conventions, testing patterns,
 and quality expectations.
 
 Output always goes to **`.zspec/codebase/`**.
+
+> **Writing files**: Use `create_file` to create or overwrite the output file, then use `mcp_oraios_serena_replace_symbol_body` to fill each `##` section with findings.
 
 ## When to Use This Agent
 

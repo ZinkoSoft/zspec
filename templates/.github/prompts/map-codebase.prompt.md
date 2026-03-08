@@ -5,6 +5,7 @@ tools:
   - read_file
   - list_dir
   - search_files
+  - create_file
   - run_in_terminal
 ---
 
