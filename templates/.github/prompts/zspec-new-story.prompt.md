@@ -12,31 +12,37 @@ tools:
 
 # New Story
 
-Scaffold a new story in two phases: create via CLI (source of truth), then fill in content using Serena's symbol tools.
+Scaffold a new story in three phases: resolve the next story number from git (required first), create via CLI (source of truth), then fill in content.
 
-## Phase 0 - Create story via CLI (required)
+## Phase 0 - Resolve next story number (do this first, before anything else)
+
+**Do not generate a story name, do not research the codebase, and do not create any files until `NNNN` is known.**
+
+1. Determine the next story number using the best available method — try each in order and stop at the first that succeeds:
+   a. **CLI (preferred)**: run `zspec story-next "placeholder"` (or `npx zspec story-next "placeholder"`). Parse the `NNNN` prefix from the output.
+   b. **Git branch**: run `git branch --show-current`. If the current branch matches `^\d{4}-`, extract that number and add 1 (zero-padded to 4 digits) as the next number.
+   c. **Directory scan**: list `.zspec/stories/` and find all subdirectories matching `^\d{4}-`. Take the highest numeric prefix and add 1 (zero-padded). If no numbered directories exist, use `0001`.
+2. Store the resolved `NNNN` value — every subsequent step depends on it.
+3. Do not proceed to Phase 1 until `NNNN` is confirmed.
+
+## Phase 1 - Create story scaffold
 
 1. Do not ask the user for a story name.
 2. Generate a short story name automatically from available context (request text, current work, or most relevant code area), then normalize it to a slug base.
-3. Resolve the exact next story slug from the zspec binary first:
-   - Preferred: `zspec story-next "<generated short story name>"`
-   - Fallback: `npx zspec story-next "<generated short story name>"`
-4. Target story slug format must be `NNNN-<generated-short-story-name>`.
-5. Create the story via CLI using the generated short story name:
+3. Form the story slug as `NNNN-<normalized-name-slug>` using the `NNNN` from Phase 0.
+4. Create the story via CLI using the generated short story name:
    - Preferred: `zspec story "<generated short story name>"`
    - Fallback: `npx zspec story "<generated short story name>"`
    - `zspec story` handles git init, branch creation (`git checkout -b <NNNN-slug>`), and `NNNN-<slug>` auto-incrementing automatically.
-6. If terminal tools are unavailable or command execution is blocked, do not stop and do not ask the user to change settings. Instead, continue with an in-prompt fallback:
-   - Compute next story number by scanning `.zspec/stories/` directories that match `^\d{4}-`.
-   - Create `<story-slug>` as `NNNN-<normalized-name-slug>`.
+5. If terminal tools are unavailable or command execution is blocked, do not stop and do not ask the user to change settings. Instead, continue with an in-prompt fallback:
    - Create a git branch for the story first by running `git checkout -b <story-slug>` via `run_in_terminal`. If that also fails, note in `notes.md` that git branch creation was skipped due to unavailable terminal tools.
    - Create `.zspec/stories/<story-slug>/story.md`, `context.md`, `tasks.md`, `notes.md` directly with `create_file`.
    - Create `.zspec/stories/<story-slug>/codebase/` stub files: `STACK.md`, `INTEGRATIONS.md`, `ARCHITECTURE.md`, `STRUCTURE.md`, `CONVENTIONS.md`, `TESTING.md`, `CONCERNS.md` — each with a placeholder comment `<!-- Run @codebase-mapper to populate this file. -->`.
-7. Do not re-implement numbering or git logic when CLI execution succeeds.
+6. Do not re-implement numbering or git logic when CLI execution succeeds.
    - `zspec story` already handles git init, branch selection, and `NNNN-<slug>` auto-incrementing.
-8. Read the created `.zspec/stories/<story-slug>/` files and continue from there.
+7. Read the created `.zspec/stories/<story-slug>/` files and continue from there.
 
-## Phase 1 - Fill in story content
+## Phase 2 - Fill in story content
 
 1. Load shared codebase context before writing story content:
    - Read `.zspec/codebase/*.md` (for example: `STACK.md`, `INTEGRATIONS.md`, `ARCHITECTURE.md`, `STRUCTURE.md`, `CONVENTIONS.md`, `TESTING.md`, `CONCERNS.md`).
