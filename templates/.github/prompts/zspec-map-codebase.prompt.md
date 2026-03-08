@@ -2,11 +2,12 @@
 mode: agent
 description: Analyze the repository and populate shared codebase context docs in .zspec/codebase/ (STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, CONCERNS). No story required.
 tools:
-  - read_file
-  - list_dir
-  - search_files
-  - create_file
-  - run_in_terminal
+  - agent
+  - read
+  - edit
+  - search
+  - execute
+  - oraios/serena/*
 ---
 
 # Map Codebase
