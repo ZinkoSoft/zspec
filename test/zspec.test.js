@@ -400,6 +400,35 @@ describe('story', () => {
 });
 
 // ---------------------------------------------------------------------------
+// story-next
+// ---------------------------------------------------------------------------
+
+describe('story-next', () => {
+  it('prints next numbered slug for a provided story name', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-story-next-'));
+    try {
+      const { stdout, status } = run(['story-next', 'Add MediaMath DSP Support'], { cwd: tmpDir });
+      assert.equal(status, 0);
+      assert.match(stdout.trim(), /^0001-add-mediamath-dsp-support$/);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('increments based on existing numbered story directories', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-story-next-incr-'));
+    try {
+      fs.mkdirSync(path.join(tmpDir, '.zspec', 'stories', '0003-existing'), { recursive: true });
+      const { stdout, status } = run(['story-next', 'follow up'], { cwd: tmpDir });
+      assert.equal(status, 0);
+      assert.match(stdout.trim(), /^0004-follow-up$/);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // use
 // ---------------------------------------------------------------------------
 

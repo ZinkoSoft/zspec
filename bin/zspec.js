@@ -14,7 +14,7 @@ function die(msg, code = 1) {
 }
 
 function usage() {
-  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} [init] [--force|--upgrade]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init (default): scaffold repo conventions (.github/, .zspec/)\n  - init --upgrade: refresh non-.zspec scaffold files, keep existing .zspec files intact\n  - init --force: overwrite scaffold files everywhere (including .zspec)\n  - new: create .zspec/specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: scaffold repo conventions (.github/, .zspec/)\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: check and install Serena MCP (via uv/uvx) interactively\n`);
+  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} [init] [--force|--upgrade]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} story-next [story-name]\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init (default): scaffold repo conventions (.github/, .zspec/)\n  - init --upgrade: refresh non-.zspec scaffold files, keep existing .zspec files intact\n  - init --force: overwrite scaffold files everywhere (including .zspec)\n  - new: create .zspec/specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: scaffold repo conventions (.github/, .zspec/)\n  - story-next: print the next numbered story slug (optionally based on a provided name)\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: check and install Serena MCP (via uv/uvx) interactively\n`);
 }
 
 function repoRoot() {
@@ -407,6 +407,14 @@ Next steps:
   console.log('---');
 }
 
+function cmd_story_next(args) {
+  const root = repoRoot();
+  const name = args.join(' ').trim() || 'story';
+  const isPrefixed = /^\d{4}-[a-z0-9][a-z0-9-]*$/.test(name);
+  const slug = isPrefixed ? name.toLowerCase() : `${nextStoryNumber(root)}-${slugify(name)}`;
+  console.log(slug);
+}
+
 function cmd_use(args) {
   const skill = (args[0] || '').trim();
   if (!skill) die('missing <skill-name> (example: frontend-design).');
@@ -574,6 +582,9 @@ async function cmd_mcp() {
       break;
     case 'story':
       cmd_story(argv);
+      break;
+    case 'story-next':
+      cmd_story_next(argv);
       break;
     case 'use':
       cmd_use(argv);

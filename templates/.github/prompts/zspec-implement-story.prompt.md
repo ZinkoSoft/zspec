@@ -11,6 +11,7 @@ tools:
   - mcp_oraios_serena_insert_after_symbol
   - edit_file
   - run_in_terminal
+  - run_command
 ---
 
 # Implement Story
@@ -20,13 +21,18 @@ Drive end-to-end implementation of a `.zspec` story following the project's engi
 ## Instructions
 
 1. Resolve the story slug automatically before asking the user:
-   - Run `git rev-parse --is-inside-work-tree`.
-   - If that fails, run `git init` and continue.
-   - Get current branch with `git branch --show-current`.
-   - If current branch matches `^\d{4}-[a-z0-9][a-z0-9-]*$` and `.zspec/stories/<branch>/` exists, use it.
-   - Otherwise, scan `.zspec/stories/` for directories matching `^\d{4}-` and select the highest numeric prefix.
-   - This should mirror `zspec story` numbering semantics.
-   - If no numbered story exists, ask the user for a story name and create one via `/zspec-new-story` first.
+    - If terminal tools are available:
+       - Run `git rev-parse --is-inside-work-tree`.
+       - If that fails, run `git init` and continue.
+       - Get current branch with `git branch --show-current`.
+       - If current branch matches `^\d{4}-[a-z0-9][a-z0-9-]*$` and `.zspec/stories/<branch>/` exists, use it.
+       - If branch does not map to a story directory, derive candidate slug from zspec binary:
+          - Preferred: `zspec story-next "<generated short story name>"`
+          - Fallback: `npx zspec story-next "<generated short story name>"`
+          - If that candidate story exists in `.zspec/stories/`, use it; otherwise fall back to latest numbered existing story.
+    - If terminal tools are unavailable or branch lookup fails, scan `.zspec/stories/` for directories matching `^\d{4}-` and select the highest numeric prefix.
+    - This should mirror `zspec story` numbering semantics.
+    - If no numbered story exists, ask the user for a story name and create one via `/zspec-new-story` first.
 2. Read the story documents in order:
    - `.zspec/stories/<story-slug>/story.md` — user story and acceptance criteria
    - `.zspec/stories/<story-slug>/context.md` — relevant systems and architectural notes

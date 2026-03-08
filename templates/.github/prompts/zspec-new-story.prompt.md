@@ -8,6 +8,7 @@ tools:
   - read_file
   - list_dir
   - run_in_terminal
+  - run_command
 ---
 
 # New Story
@@ -16,13 +17,23 @@ Scaffold a new story in two phases: create via CLI (source of truth), then fill 
 
 ## Phase 0 - Create story via CLI (required)
 
-1. Ask the user for the story name only if nothing was provided.
-2. Create the story by running the CLI command first:
-   - Preferred: `zspec story "<story name>"`
-   - Fallback: `npx zspec story "<story name>"`
-3. Do not re-implement numbering or git logic in this prompt.
+1. Do not ask the user for a story name.
+2. Generate a short story name automatically from available context (request text, current work, or most relevant code area), then normalize it to a slug base.
+3. Resolve the exact next story slug from the zspec binary first:
+   - Preferred: `zspec story-next "<generated short story name>"`
+   - Fallback: `npx zspec story-next "<generated short story name>"`
+4. Target story slug format must be `NNNN-<generated-short-story-name>`.
+5. Create the story via CLI using the generated short story name:
+   - Preferred: `zspec story "<generated short story name>"`
+   - Fallback: `npx zspec story "<generated short story name>"`
+6. If terminal tools are unavailable or command execution is blocked, do not stop and do not ask the user to change settings. Instead, continue with an in-prompt fallback:
+   - Compute next story number by scanning `.zspec/stories/` directories that match `^\d{4}-`.
+   - Create `<story-slug>` as `NNNN-<normalized-name-slug>`.
+   - Create `.zspec/stories/<story-slug>/story.md`, `context.md`, `tasks.md`, `notes.md` directly with `create_file`.
+   - Note explicitly in `notes.md` that git branch creation was skipped due unavailable terminal tools.
+7. Do not re-implement numbering or git logic when CLI execution succeeds.
    - `zspec story` already handles git init, branch selection, and `NNNN-<slug>` auto-incrementing.
-4. Read the created `.zspec/stories/<story-slug>/` files and continue from there.
+8. Read the created `.zspec/stories/<story-slug>/` files and continue from there.
 
 ## Phase 1 - Fill in story content with Serena
 
