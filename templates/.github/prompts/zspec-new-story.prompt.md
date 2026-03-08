@@ -25,11 +25,13 @@ Scaffold a new story in two phases: create via CLI (source of truth), then fill 
 5. Create the story via CLI using the generated short story name:
    - Preferred: `zspec story "<generated short story name>"`
    - Fallback: `npx zspec story "<generated short story name>"`
+   - `zspec story` handles git init, branch creation (`git checkout -b <NNNN-slug>`), and `NNNN-<slug>` auto-incrementing automatically.
 6. If terminal tools are unavailable or command execution is blocked, do not stop and do not ask the user to change settings. Instead, continue with an in-prompt fallback:
    - Compute next story number by scanning `.zspec/stories/` directories that match `^\d{4}-`.
    - Create `<story-slug>` as `NNNN-<normalized-name-slug>`.
+   - Create a git branch for the story first by running `git checkout -b <story-slug>` via `run_in_terminal`. If that also fails, note in `notes.md` that git branch creation was skipped due to unavailable terminal tools.
    - Create `.zspec/stories/<story-slug>/story.md`, `context.md`, `tasks.md`, `notes.md` directly with `create_file`.
-   - Note explicitly in `notes.md` that git branch creation was skipped due unavailable terminal tools.
+   - Create `.zspec/stories/<story-slug>/codebase/` stub files: `STACK.md`, `INTEGRATIONS.md`, `ARCHITECTURE.md`, `STRUCTURE.md`, `CONVENTIONS.md`, `TESTING.md`, `CONCERNS.md` — each with a placeholder comment `<!-- Run @codebase-mapper to populate this file. -->`.
 7. Do not re-implement numbering or git logic when CLI execution succeeds.
    - `zspec story` already handles git init, branch selection, and `NNNN-<slug>` auto-incrementing.
 8. Read the created `.zspec/stories/<story-slug>/` files and continue from there.
