@@ -376,6 +376,13 @@ function cmd_story(args) {
   writeText(path.join(storyDir, 'tasks.md'), tasksMd, false);
   writeText(path.join(storyDir, 'notes.md'), notesMd, false);
 
+  const codebaseDir = path.join(storyDir, 'codebase');
+  ensureDir(codebaseDir);
+  const codebaseStubNote = `<!-- Run @codebase-mapper to populate this file. -->`;
+  for (const f of ['STACK.md', 'INTEGRATIONS.md', 'ARCHITECTURE.md', 'STRUCTURE.md', 'CONVENTIONS.md', 'TESTING.md', 'CONCERNS.md']) {
+    writeText(path.join(codebaseDir, f), codebaseStubNote + '\n', false);
+  }
+
   const storyRel = `.zspec/stories/${slug}/story.md`;
 
   if (inGit) {
@@ -390,7 +397,7 @@ function cmd_story(args) {
   }
 
   console.log(`\n📖 Story created: .zspec/stories/${slug}/`);
-  console.log(`   story.md · context.md · tasks.md · notes.md`);
+  console.log(`   story.md · context.md · tasks.md · notes.md · codebase/`);
 
   console.log(`\nCopilot / agent prompt to paste once:`);
   console.log('---');
@@ -398,8 +405,8 @@ function cmd_story(args) {
 `Read .github/AGENTS.md and .github/copilot-instructions.md. Then open the story: ${storyRel}.
 
 Next steps:
-1. If not done yet, run /zspec-map-codebase to build shared codebase context in .zspec/codebase/.
-2. Read .zspec/codebase/ docs (STACK, ARCHITECTURE, CONCERNS, etc.) to understand the codebase.
+1. If not done yet, run @codebase-mapper to populate codebase/ docs in .zspec/codebase/ and this story's codebase/ stubs.
+2. Read codebase/ docs (STACK, ARCHITECTURE, CONCERNS, etc.) to understand the codebase.
 3. Fill in context.md with notes specific to this story.
 4. Implement tasks in tasks.md as small, reviewable diffs.
 5. Record decisions and tradeoffs in notes.md.
