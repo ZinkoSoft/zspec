@@ -1,7 +1,7 @@
 {
   "name": "zspec",
   "version": "0.1.2",
-  "description": "CLI scaffold combining the zspec workflow + GitHub Speckit spec management + Serena-first MCP config",
+  "description": "CLI scaffold combining the GSD workflow + GitHub Speckit spec management + Serena-first MCP config",
   "type": "module",
   "bin": {
     "zspec": "./bin/zspec.js"

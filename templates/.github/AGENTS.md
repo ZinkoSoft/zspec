@@ -23,19 +23,19 @@ For ad-hoc features or teams using the older spec-per-feature approach:
 
 1. **Create a spec**: `zspec new "<feature name>"`
 2. **Follow the zspec loop** (below)
-3. **Log progress**: Append to `zspec/logs/progress.md`
+3. **Log progress**: Append to `.zspec/logs/progress.md`
 
 ---
 
 ## zspec Default Loop
 
-1. **Load context** — read the active spec(s) and `zspec/memory/constitution.md`
+1. **Load context** — read the active spec(s) and `.zspec/memory/constitution.md`
 2. **Ask bounded questions** — at most 7 critical questions; proceed with
    explicit assumptions if info is missing
 3. **Plan** — 3–7 PR-sized steps (small, reviewable, easy rollback)
 4. **Execute** — prefer Serena MCP tools for symbol lookup and safe edits
 5. **Verify** — run tests, lint, typecheck; provide manual plan if unavailable
-6. **Log** — append to `zspec/logs/progress.md`: what changed, how to verify,
+6. **Log** — append to `.zspec/logs/progress.md`: what changed, how to verify,
    any risks
 
 ---
@@ -121,13 +121,13 @@ If MCP tools are available, prefer Serena for:
 - file edits with guardrails
 - safe refactors
 
-Repo includes `mcp/serena.json` and `scripts/serena.mjs`.
+Repo includes `.zspec/mcp/serena.json` and `.zspec/scripts/serena.mjs`.
 
 ---
 
 ## Skills
 
-Skills live in `skills/`. When a task matches a skill, apply it as constraints.
+Skills live in `.zspec/skills/`. When a task matches a skill, apply it as constraints.
 
-- UI/component/layout work: `skills/frontend-design`
+- UI/component/layout work: `.zspec/skills/frontend-design`
 

@@ -13,7 +13,7 @@ function die(msg, code = 1) {
 }
 
 function usage() {
-  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} [init] [--force]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init (default): scaffold repo conventions (AGENTS.md, .zspec/, specs/, zspec/, .github/agents/, .github/prompts/, scripts, skills)\n  - new: create specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: create .zspec/stories/<slug>/ with story.md, context.md, tasks.md, notes.md, codebase/\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: print Serena MCP client snippets and run commands\n`);
+  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} [init] [--force]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init (default): scaffold repo conventions (.github/, .zspec/)\n  - new: create .zspec/specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: create .zspec/stories/<slug>/ with story.md, context.md, tasks.md, notes.md, codebase/\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: print Serena MCP client snippets and run commands\n`);
 }
 
 function repoRoot() {
@@ -97,19 +97,19 @@ function cmd_init(args) {
       const pkg = JSON.parse(readText(pkgPath));
       pkg.scripts ??= {};
       const scripts = {
-        "zspec:repo": "node zspec/run.mjs repo:summary",
-        "zspec:diff": "node zspec/run.mjs git:diff-summary",
-        "zspec:plan": "node zspec/run.mjs spec:plan",
-        "zspec:pr": "node zspec/run.mjs git:pr-body",
-        "zspec:check": "node zspec/run.mjs checks:all",
-        "spec:init": "node zspec/run.mjs spec:init",
-        "spec:new": "node zspec/run.mjs spec:new",
-        "spec:list": "node zspec/run.mjs spec:list",
-        "spec:add-plan": "node zspec/run.mjs spec:add-plan",
-        "spec:add-tasks": "node zspec/run.mjs spec:add-tasks",
-        "spec:commit": "node zspec/run.mjs spec:commit",
-        "spec:done": "node zspec/run.mjs spec:done",
-        "spec:reject": "node zspec/run.mjs spec:reject"
+        "zspec:repo": "node .zspec/run.mjs repo:summary",
+        "zspec:diff": "node .zspec/run.mjs git:diff-summary",
+        "zspec:plan": "node .zspec/run.mjs spec:plan",
+        "zspec:pr": "node .zspec/run.mjs git:pr-body",
+        "zspec:check": "node .zspec/run.mjs checks:all",
+        "spec:init": "node .zspec/run.mjs spec:init",
+        "spec:new": "node .zspec/run.mjs spec:new",
+        "spec:list": "node .zspec/run.mjs spec:list",
+        "spec:add-plan": "node .zspec/run.mjs spec:add-plan",
+        "spec:add-tasks": "node .zspec/run.mjs spec:add-tasks",
+        "spec:commit": "node .zspec/run.mjs spec:commit",
+        "spec:done": "node .zspec/run.mjs spec:done",
+        "spec:reject": "node .zspec/run.mjs spec:reject"
       };
       for (const [k, v] of Object.entries(scripts)) {
         if (!pkg.scripts[k] || force) pkg.scripts[k] = v;
@@ -124,9 +124,9 @@ function cmd_init(args) {
     }
   }
 
-  // Ensure specs/ and its template dir exist
-  ensureDir(path.join(root, 'specs', '0000-template'));
-  ensureDir(path.join(root, 'zspec', 'memory'));
+  // Ensure .zspec/specs/ and its template dir exist
+  ensureDir(path.join(root, '.zspec', 'specs', '0000-template'));
+  ensureDir(path.join(root, '.zspec', 'memory'));
 
   // Ensure .zspec/ story directories exist
   ensureDir(path.join(root, '.zspec', 'stories'));
@@ -140,11 +140,11 @@ function cmd_init(args) {
   console.log(`    notes.md     ← decisions, tradeoffs, risks`);
   console.log(`    codebase/    ← STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, CONCERNS`);
   console.log(`\nSpec layout (speckit-style, one dir per feature):`);
-  console.log(`  specs/NNNN-slug/   ← one directory per feature (git branch per feature)`);
+  console.log(`  .zspec/specs/NNNN-slug/   ← one directory per feature (git branch per feature)`);
   console.log(`    spec.md          ← requirements (spec:new)`);
   console.log(`    plan.md          ← technical plan (spec:add-plan)`);
   console.log(`    tasks.md         ← task breakdown (spec:add-tasks)`);
-  console.log(`  zspec/memory/constitution.md  ← project principles`);
+  console.log(`  .zspec/memory/constitution.md  ← project principles`);
   console.log(`\nCopilot agents (.github/agents/):`);
   console.log(`  @codebase-mapper  ← orchestrates codebase analysis for a story`);
   console.log(`  @stack-mapper     ← analyzes stack and integrations`);
@@ -168,7 +168,7 @@ function cmd_new(args) {
   if (!name) die('missing <feature-name>.');
 
   const root = repoRoot();
-  const specsDir = path.join(root, 'specs');
+  const specsDir = path.join(root, '.zspec', 'specs');
   ensureDir(specsDir);
 
   const n = nextSpecNumber(specsDir);
@@ -176,10 +176,10 @@ function cmd_new(args) {
   const featureDir = `${n}-${slug}`;
   const featurePath = path.join(specsDir, featureDir);
 
-  if (exists(featurePath)) die(`Already exists: specs/${featureDir}/`);
+  if (exists(featurePath)) die(`Already exists: .zspec/specs/${featureDir}/`);
   ensureDir(featurePath);
 
-  const templatePath = path.join(root, 'specs', '0000-template', 'spec.md');
+  const templatePath = path.join(root, '.zspec', 'specs', '0000-template', 'spec.md');
   const fallback = `# ${name}\n\n- ID: ${n}\n- Date: ${new Date().toISOString().slice(0, 10)}\n- Slug: ${slug}\n\n## Problem\n\n## Goal\n\n## Non-goals\n\n## Acceptance criteria\n- [ ]\n\n## Risks / unknowns\n-\n`;
   const template = exists(templatePath) ? readText(templatePath) : fallback;
   const content = template
@@ -191,7 +191,7 @@ function cmd_new(args) {
   const specFile = path.join(featurePath, 'spec.md');
   writeText(specFile, content, false);
 
-  const specRel = `specs/${featureDir}/spec.md`;
+  const specRel = `.zspec/specs/${featureDir}/spec.md`;
   console.log(`\n🧾 Spec created: ${specRel}`);
 
   // Git: create feature branch and auto-commit
@@ -213,13 +213,13 @@ function cmd_new(args) {
   console.log(`\nCopilot / agent prompt to paste once:`);
   console.log('---');
   console.log(
-`Read AGENTS.md and zspec/memory/constitution.md (if present). Then open and follow the spec: ${specRel}.
+`Read .github/AGENTS.md and .zspec/memory/constitution.md (if present). Then open and follow the spec: ${specRel}.
 
 Rules:
 - Prefer Serena MCP tools for symbol lookup + edits when available.
 - Ask at most 7 critical questions only if truly blocking; otherwise proceed with explicit assumptions.
 - Produce: (1) a short implementation plan (3–7 steps), then (2) implement Step 1 as a small, reviewable diff.
-- After changes: run checks (tests/lint/typecheck if present) and update zspec/logs/progress.md with what changed and how to verify.
+- After changes: run checks (tests/lint/typecheck if present) and update .zspec/logs/progress.md with what changed and how to verify.
 - Use spec:add-plan and spec:add-tasks to scaffold the plan and task breakdown docs.
 `);
   console.log('---');
@@ -302,11 +302,11 @@ function cmd_use(args) {
   if (!skill) die('missing <skill-name> (example: frontend-design).');
 
   const root = repoRoot();
-  const skillPath = path.join(root, 'skills', skill, 'SKILL.md');
+  const skillPath = path.join(root, '.zspec', 'skills', skill, 'SKILL.md');
   console.log(`\nSkill activation prompt:`);
   console.log('---');
   console.log(
-`Activate the skill "${skill}" by reading ${exists(skillPath) ? `skills/${skill}/SKILL.md` : `skills/${skill}/SKILL.md (not found—did you run init?)`}.
+`Activate the skill "${skill}" by reading ${exists(skillPath) ? `.zspec/skills/${skill}/SKILL.md` : `.zspec/skills/${skill}/SKILL.md (not found—did you run init?)`}.
 Then:
 - Apply the skill's rules as constraints.
 - Keep code production-grade and runnable.
@@ -317,8 +317,8 @@ Then:
 
 function cmd_status() {
   const root = repoRoot();
-  const specsDir = path.join(root, 'specs');
-  const logs = path.join(root, 'zspec', 'logs', 'progress.md');
+  const specsDir = path.join(root, '.zspec', 'specs');
+  const logs = path.join(root, '.zspec', 'logs', 'progress.md');
 
   console.log(`\n📌 ${PKG} status (${root})\n`);
 
@@ -346,7 +346,7 @@ function cmd_status() {
       console.log(`  ${dir.slice(0, 4)}  [${state}]  ${title}`);
     }
   } else {
-    console.log('No specs/ directory found (run init?).');
+    console.log('No .zspec/specs/ directory found (run init?).');
   }
 
   console.log('');
@@ -356,31 +356,31 @@ function cmd_status() {
     console.log('Recent progress log:');
     console.log(tail.map(l => `  ${l}`).join('\n'));
   } else {
-    console.log('No progress log found at zspec/logs/progress.md');
+    console.log('No progress log found at .zspec/logs/progress.md');
   }
 
   console.log('');
-  console.log('Tip: run `node zspec/run.mjs repo:summary` to give agents instant context.');
+  console.log('Tip: run `node .zspec/run.mjs repo:summary` to give agents instant context.');
 }
 
 function cmd_mcp() {
   const root = repoRoot();
   console.log(`\n🧠 Serena MCP (default)\n`);
-  console.log(`This scaffold includes mcp/serena.json and scripts/serena.mjs.`);
+  console.log(`This scaffold includes .zspec/mcp/serena.json and .zspec/scripts/serena.mjs.`);
   console.log(`Serena can be launched via stdio subprocess or as an HTTP/SSE server; clients differ. Serena docs: https://oraios.github.io/serena/ (see "Running Serena" and "Connecting Your MCP Client").`);
   console.log(`\nRecommended (most reliable) install/run path is via Python uv/uvx (per many Serena guides), but you can adapt.`);
 
   console.log(`\n1) Stdio mode (client launches Serena as subprocess)`);
   console.log(`   Command (example):`);
-  console.log(`     node scripts/serena.mjs stdio`);
+  console.log(`     node .zspec/scripts/serena.mjs stdio`);
 
   console.log(`\n2) HTTP/SSE mode (you start Serena; client connects to URL)`);
   console.log(`   Start server:`);
-  console.log(`     node scripts/serena.mjs http --port 9123`);
+  console.log(`     node .zspec/scripts/serena.mjs http --port 9123`);
   console.log(`   Then configure client server URL to: http://127.0.0.1:9123`);
 
   console.log(`\nNote:`);
-  console.log(`- scripts/serena.mjs uses SERENA_CMD env var if set (e.g., 'uvx serena' or 'serena').`);
+  console.log(`- .zspec/scripts/serena.mjs uses SERENA_CMD env var if set (e.g., 'uvx serena' or 'serena').`);
   console.log(`- If Serena isn't installed yet, install it first (see Serena docs).`);
 }
 

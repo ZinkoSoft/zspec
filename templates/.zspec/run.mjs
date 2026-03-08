@@ -171,7 +171,7 @@ every session to ensure consistency.
 // Helpers
 // ---------------------------------------------------------------------------
 
-const SPEC_ROOT = () => path.join(process.cwd(), 'specs');
+const SPEC_ROOT = () => path.join(process.cwd(), '.zspec', 'specs');
 
 function slugify(s) {
   return s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'spec';
@@ -285,7 +285,7 @@ function diffSummary() {
 function specInit() {
   const root = SPEC_ROOT();
   const tplDir = path.join(root, '0000-template');
-  const memDir = path.join(process.cwd(), 'zspec', 'memory');
+  const memDir = path.join(process.cwd(), '.zspec', 'memory');
   let created = [];
 
   fs.mkdirSync(root, { recursive: true });
@@ -318,7 +318,7 @@ function specInit() {
   console.log('    spec.md             ← requirements (spec:new)');
   console.log('    plan.md             ← technical plan (spec:add-plan)');
   console.log('    tasks.md            ← task breakdown (spec:add-tasks)');
-  console.log('  zspec/memory/constitution.md  ← project principles');
+  console.log('  .zspec/memory/constitution.md  ← project principles');
   console.log('');
   console.log('Lifecycle is tracked via git branches (one branch per feature).');
 }
@@ -394,7 +394,7 @@ function specAddDoc(args, docType) {
 function specList() {
   const dirs = specDirs();
   if (!dirs.length) {
-    console.log('No specs found. Run: node zspec/run.mjs spec:new <name>');
+    console.log('No specs found. Run: node .zspec/run.mjs spec:new <name>');
     return;
   }
 
@@ -504,7 +504,7 @@ function specPlan() {
   console.log('');
   console.log(`(Source: specs/${featureDir}/spec.md)`);
   console.log('');
-  console.log(`Tip: run  node zspec/run.mjs spec:add-plan  to scaffold a plan.md`);
+  console.log(`Tip: run  node .zspec/run.mjs spec:add-plan  to scaffold a plan.md`);
 }
 
 function prBody() {
@@ -581,10 +581,10 @@ switch (cmd) {
   case 'spec:plan':      specPlan(); break; // prints plan skeleton for AI
 
   default:
-    console.log('Usage: node zspec/run.mjs <command>');
+    console.log('Usage: node .zspec/run.mjs <command>');
     console.log('');
     console.log('Spec lifecycle (one git branch per feature):');
-    console.log('  spec:init               set up specs/ + zspec/memory/ structure');
+    console.log('  spec:init               set up .zspec/specs/ + .zspec/memory/ structure');
     console.log('  spec:new <name>         create specs/NNNN-slug/ + branch + auto-commit');
     console.log('  spec:add-plan [id]      scaffold specs/NNNN-slug/plan.md + auto-commit');
     console.log('  spec:add-tasks [id]     scaffold specs/NNNN-slug/tasks.md + auto-commit');
