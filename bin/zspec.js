@@ -187,7 +187,7 @@ function cmd_init(args) {
   console.log(`    context.md   ← story-specific notes, references .zspec/codebase/`);
   console.log(`    tasks.md     ← implementation and review checklists`);
   console.log(`    notes.md     ← decisions, tradeoffs, risks`);
-  console.log(`  .zspec/codebase/   ← shared repo context (run /map-codebase once to populate)`);
+  console.log(`  .zspec/codebase/   ← shared repo context (run /zspec-map-codebase once to populate)`);
   console.log(`    STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, CONCERNS`);
   console.log(`\nSpec layout (speckit-style, one dir per feature):`);
   console.log(`  .zspec/specs/NNNN-slug/   ← one directory per feature (git branch per feature)`);
@@ -202,11 +202,11 @@ function cmd_init(args) {
   console.log(`  @quality-mapper   ← analyzes conventions and testing`);
   console.log(`  @concerns-mapper  ← identifies technical concerns`);
   console.log(`\nCopilot Chat prompts (.github/prompts/):`);
-  console.log(`  new-story         ← scaffold a new story`);
-  console.log(`  map-codebase      ← analyze and document the codebase (run once, not per-story)`);
-  console.log(`  new-spec          ← create a new feature spec`);
-  console.log(`  implement-story   ← implement a story end-to-end`);
-  console.log(`  pr-description    ← generate a PR description`);
+  console.log(`  zspec-new-story         ← scaffold a new story`);
+  console.log(`  zspec-map-codebase      ← analyze and document the codebase (run once, not per-story)`);
+  console.log(`  zspec-new-spec          ← create a new feature spec`);
+  console.log(`  zspec-implement-story   ← implement a story end-to-end`);
+  console.log(`  zspec-pr-description    ← generate a PR description`);
   console.log(`\nNext:`);
   console.log(`  1) Create a story: ${PKG} story "add billing"`);
   console.log(`  2) Or create a spec: ${PKG} new "add billing"  (or: npm run spec:new -- "add billing")`);
@@ -322,7 +322,7 @@ function cmd_story(args) {
 `Read .github/AGENTS.md and .github/copilot-instructions.md. Then open the story: ${storyRel}.
 
 Next steps:
-1. If not done yet, run /map-codebase to build shared codebase context in .zspec/codebase/.
+1. If not done yet, run /zspec-map-codebase to build shared codebase context in .zspec/codebase/.
 2. Read .zspec/codebase/ docs (STACK, ARCHITECTURE, CONCERNS, etc.) to understand the codebase.
 3. Fill in context.md with notes specific to this story.
 4. Implement tasks in tasks.md as small, reviewable diffs.

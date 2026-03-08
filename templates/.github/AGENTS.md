@@ -92,7 +92,7 @@ Cross-reference instead.
 ├── tasks.md          ← implementation, testing, and review checklists
 └── notes.md          ← decisions, tradeoffs, risks, open questions
 
-.zspec/codebase/          ← shared repo context (run /map-codebase to populate)
+.zspec/codebase/          ← shared repo context (run /zspec-map-codebase to populate)
 ├── STACK.md            ← languages, frameworks, build tooling
 ├── INTEGRATIONS.md     ← APIs, databases, queues, auth, observability
 ├── ARCHITECTURE.md     ← layers, components, patterns, data flow

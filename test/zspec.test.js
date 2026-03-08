@@ -28,7 +28,7 @@ describe('help', () => {
       assert.equal(status, 0);
       assert.match(stdout, /Initialized zspec scaffold/);
       // .github/prompts/ should be scaffolded
-      assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'prompts', 'new-story.prompt.md')), 'new-story.prompt.md missing');
+      assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'prompts', 'zspec-new-story.prompt.md')), 'zspec-new-story.prompt.md missing');
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
@@ -105,11 +105,11 @@ describe('init', () => {
 
       // Copilot Chat prompt files should have been scaffolded
       const promptsDir = path.join(tmpDir, '.github', 'prompts');
-      assert.ok(fs.existsSync(path.join(promptsDir, 'new-story.prompt.md')), 'new-story.prompt.md missing');
-      assert.ok(fs.existsSync(path.join(promptsDir, 'map-codebase.prompt.md')), 'map-codebase.prompt.md missing');
-      assert.ok(fs.existsSync(path.join(promptsDir, 'new-spec.prompt.md')), 'new-spec.prompt.md missing');
-      assert.ok(fs.existsSync(path.join(promptsDir, 'implement-story.prompt.md')), 'implement-story.prompt.md missing');
-      assert.ok(fs.existsSync(path.join(promptsDir, 'pr-description.prompt.md')), 'pr-description.prompt.md missing');
+      assert.ok(fs.existsSync(path.join(promptsDir, 'zspec-new-story.prompt.md')), 'zspec-new-story.prompt.md missing');
+      assert.ok(fs.existsSync(path.join(promptsDir, 'zspec-map-codebase.prompt.md')), 'zspec-map-codebase.prompt.md missing');
+      assert.ok(fs.existsSync(path.join(promptsDir, 'zspec-new-spec.prompt.md')), 'zspec-new-spec.prompt.md missing');
+      assert.ok(fs.existsSync(path.join(promptsDir, 'zspec-implement-story.prompt.md')), 'zspec-implement-story.prompt.md missing');
+      assert.ok(fs.existsSync(path.join(promptsDir, 'zspec-pr-description.prompt.md')), 'zspec-pr-description.prompt.md missing');
 
       // .zspec story templates should have been scaffolded
       assert.ok(fs.existsSync(path.join(tmpDir, '.zspec', 'templates', 'story.md')), '.zspec/templates/story.md missing');
@@ -124,7 +124,7 @@ describe('init', () => {
       assert.match(stdout, /codebase-mapper/);
       assert.match(stdout, /zspec story/);
       assert.match(stdout, /\.github\/prompts/);
-      assert.match(stdout, /new-story/);
+      assert.match(stdout, /zspec-new-story/);
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
