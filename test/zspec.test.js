@@ -28,6 +28,7 @@ describe('help', () => {
     assert.match(stdout, /Usage:/);
     assert.match(stdout, /init/);
     assert.match(stdout, /new/);
+    assert.match(stdout, /story/);
     assert.match(stdout, /use/);
     assert.match(stdout, /status/);
     assert.match(stdout, /mcp/);
@@ -82,10 +83,31 @@ describe('init', () => {
       assert.ok(fs.existsSync(path.join(tmpDir, 'gsd', 'memory')), 'gsd/memory/ missing');
       assert.ok(fs.existsSync(path.join(tmpDir, 'AGENTS.md')), 'AGENTS.md missing');
 
+      // .zspec/ story directories should have been created
+      assert.ok(fs.existsSync(path.join(tmpDir, '.zspec', 'stories')), '.zspec/stories/ missing');
+
+      // Copilot agent files should have been scaffolded
+      assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'agents', 'codebase-mapper.agent.md')), 'codebase-mapper.agent.md missing');
+      assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'agents', 'stack-mapper.agent.md')), 'stack-mapper.agent.md missing');
+      assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'agents', 'arch-mapper.agent.md')), 'arch-mapper.agent.md missing');
+      assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'agents', 'quality-mapper.agent.md')), 'quality-mapper.agent.md missing');
+      assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'agents', 'concerns-mapper.agent.md')), 'concerns-mapper.agent.md missing');
+
+      // copilot-instructions.md should have been scaffolded
+      assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'copilot-instructions.md')), 'copilot-instructions.md missing');
+
+      // .zspec story templates should have been scaffolded
+      assert.ok(fs.existsSync(path.join(tmpDir, '.zspec', 'templates', 'story.md')), '.zspec/templates/story.md missing');
+      assert.ok(fs.existsSync(path.join(tmpDir, '.zspec', 'templates', 'codebase', 'STACK.md')), '.zspec/templates/codebase/STACK.md missing');
+
       // Scripts should have been injected into package.json
       const pkg = JSON.parse(fs.readFileSync(path.join(tmpDir, 'package.json'), 'utf8'));
       assert.ok(pkg.scripts['spec:new'], 'spec:new script missing');
       assert.ok(pkg.scripts['gsd:repo'], 'gsd:repo script missing');
+
+      // init output should mention story and agent info
+      assert.match(stdout, /codebase-mapper/);
+      assert.match(stdout, /zspec story/);
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
@@ -204,6 +226,117 @@ describe('new', () => {
       assert.match(stdout, /Copilot \/ agent prompt/);
       assert.match(stdout, /Read AGENTS\.md/);
       assert.match(stdout, /AGENTS\.md/);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// story
+// ---------------------------------------------------------------------------
+
+describe('story', () => {
+  it('creates a story directory with all required files', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-story-'));
+    try {
+      const { stdout, status } = run(['story', 'add billing'], { cwd: tmpDir });
+      assert.equal(status, 0, `story failed:\n${stdout}`);
+      assert.match(stdout, /Story created/);
+      assert.match(stdout, /add-billing/);
+
+      const storyDir = path.join(tmpDir, '.zspec', 'stories', 'add-billing');
+      assert.ok(fs.existsSync(storyDir), '.zspec/stories/add-billing/ missing');
+      assert.ok(fs.existsSync(path.join(storyDir, 'story.md')), 'story.md missing');
+      assert.ok(fs.existsSync(path.join(storyDir, 'context.md')), 'context.md missing');
+      assert.ok(fs.existsSync(path.join(storyDir, 'tasks.md')), 'tasks.md missing');
+      assert.ok(fs.existsSync(path.join(storyDir, 'notes.md')), 'notes.md missing');
+
+      const codebaseDir = path.join(storyDir, 'codebase');
+      assert.ok(fs.existsSync(codebaseDir), 'codebase/ missing');
+      for (const f of ['STACK.md', 'INTEGRATIONS.md', 'ARCHITECTURE.md', 'STRUCTURE.md', 'CONVENTIONS.md', 'TESTING.md', 'CONCERNS.md']) {
+        assert.ok(fs.existsSync(path.join(codebaseDir, f)), `codebase/${f} missing`);
+      }
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('slugifies story names with special characters', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-story-slug-'));
+    try {
+      const { stdout, status } = run(['story', 'User Auth & SSO!'], { cwd: tmpDir });
+      assert.equal(status, 0);
+      assert.match(stdout, /user-auth-sso/);
+      assert.ok(fs.existsSync(path.join(tmpDir, '.zspec', 'stories', 'user-auth-sso', 'story.md')));
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('populates story.md with story name and date', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-story-content-'));
+    try {
+      run(['story', 'my feature'], { cwd: tmpDir });
+      const content = fs.readFileSync(
+        path.join(tmpDir, '.zspec', 'stories', 'my-feature', 'story.md'), 'utf8'
+      );
+      assert.match(content, /my feature/i);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('uses templates from .zspec/templates/ when present', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-story-tpl-'));
+    try {
+      // Scaffold templates via init first
+      run(['init'], { cwd: tmpDir });
+      // Now create a story — should use the installed templates
+      const { status } = run(['story', 'templated story'], { cwd: tmpDir });
+      assert.equal(status, 0);
+      const storyMd = fs.readFileSync(
+        path.join(tmpDir, '.zspec', 'stories', 'templated-story', 'story.md'), 'utf8'
+      );
+      // Template includes User Story section
+      assert.match(storyMd, /User Story/);
+      assert.match(storyMd, /Acceptance Criteria/);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('exits with error when no story name is provided', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-story-noname-'));
+    try {
+      const { status, stderr } = run(['story'], { cwd: tmpDir });
+      assert.equal(status, 1);
+      assert.match(stderr, /missing <story-name>/);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('exits with error if story already exists', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-story-dup-'));
+    try {
+      run(['story', 'duplicate'], { cwd: tmpDir });
+      const { status, stderr } = run(['story', 'duplicate'], { cwd: tmpDir });
+      assert.equal(status, 1);
+      assert.match(stderr, /Already exists/);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('prints a Copilot-ready agent prompt', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-story-prompt-'));
+    try {
+      const { stdout, status } = run(['story', 'new feature'], { cwd: tmpDir });
+      assert.equal(status, 0);
+      assert.match(stdout, /Copilot \/ agent prompt/);
+      assert.match(stdout, /codebase-mapper/);
+      assert.match(stdout, /story\.md/);
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }

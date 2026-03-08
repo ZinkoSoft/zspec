@@ -13,7 +13,7 @@ function die(msg, code = 1) {
 }
 
 function usage() {
-  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} init [--force]\n  ${PKG} new <feature-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init: scaffold repo conventions (AGENTS.md, specs/, gsd/, mcp/serena.json, scripts, skills)\n  - new: create specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: print Serena MCP client snippets and run commands\n`);
+  console.log(`\n${PKG} v0.1.0\n\nUsage:\n  ${PKG} init [--force]\n  ${PKG} new <feature-name>\n  ${PKG} story <story-name>\n  ${PKG} use <skill-name>\n  ${PKG} status\n  ${PKG} mcp\n\nWhat it does:\n  - init: scaffold repo conventions (AGENTS.md, .zspec/, specs/, gsd/, .github/agents/, scripts, skills)\n  - new: create specs/NNNN-slug/ + git branch + auto-commit, print a Copilot-ready prompt\n  - story: create .zspec/stories/<slug>/ with story.md, context.md, tasks.md, notes.md, codebase/\n  - use: print a skill activation prompt (e.g., frontend-design)\n  - status: summarize specs and recent log entries (one dir per feature, branch-based lifecycle)\n  - mcp: print Serena MCP client snippets and run commands\n`);
 }
 
 function repoRoot() {
@@ -128,16 +128,33 @@ function cmd_init(args) {
   ensureDir(path.join(root, 'specs', '0000-template'));
   ensureDir(path.join(root, 'gsd', 'memory'));
 
+  // Ensure .zspec/ story directories exist
+  ensureDir(path.join(root, '.zspec', 'stories'));
+
   console.log(`\n✅ Initialized ${PKG} scaffold in ${root}`);
+  console.log(`\nStory layout (.zspec-style, one dir per story):`);
+  console.log(`  .zspec/stories/<story-slug>/   ← one directory per story`);
+  console.log(`    story.md     ← user story, acceptance criteria (zspec story)`);
+  console.log(`    context.md   ← relevant systems, architectural notes`);
+  console.log(`    tasks.md     ← implementation and review checklists`);
+  console.log(`    notes.md     ← decisions, tradeoffs, risks`);
+  console.log(`    codebase/    ← STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, CONCERNS`);
   console.log(`\nSpec layout (speckit-style, one dir per feature):`);
   console.log(`  specs/NNNN-slug/   ← one directory per feature (git branch per feature)`);
   console.log(`    spec.md          ← requirements (spec:new)`);
   console.log(`    plan.md          ← technical plan (spec:add-plan)`);
   console.log(`    tasks.md         ← task breakdown (spec:add-tasks)`);
   console.log(`  gsd/memory/constitution.md  ← project principles`);
+  console.log(`\nCopilot agents (.github/agents/):`);
+  console.log(`  @codebase-mapper  ← orchestrates codebase analysis for a story`);
+  console.log(`  @stack-mapper     ← analyzes stack and integrations`);
+  console.log(`  @arch-mapper      ← analyzes architecture and structure`);
+  console.log(`  @quality-mapper   ← analyzes conventions and testing`);
+  console.log(`  @concerns-mapper  ← identifies technical concerns`);
   console.log(`\nNext:`);
-  console.log(`  1) Create a spec: ${PKG} new "add billing"  (or: npm run spec:new -- "add billing")`);
-  console.log(`  2) Configure Serena MCP in your client using: ${PKG} mcp`);
+  console.log(`  1) Create a story: ${PKG} story "add billing"`);
+  console.log(`  2) Or create a spec: ${PKG} new "add billing"  (or: npm run spec:new -- "add billing")`);
+  console.log(`  3) Configure Serena MCP in your client using: ${PKG} mcp`);
 }
 
 function cmd_new(args) {
@@ -198,6 +215,78 @@ Rules:
 - Produce: (1) a short implementation plan (3–7 steps), then (2) implement Step 1 as a small, reviewable diff.
 - After changes: run checks (tests/lint/typecheck if present) and update gsd/logs/progress.md with what changed and how to verify.
 - Use spec:add-plan and spec:add-tasks to scaffold the plan and task breakdown docs.
+`);
+  console.log('---');
+}
+
+function cmd_story(args) {
+  const name = args.join(' ').trim();
+  if (!name) die('missing <story-name>.');
+
+  const root = repoRoot();
+  const slug = slugify(name);
+  const storyDir = path.join(root, '.zspec', 'stories', slug);
+
+  if (exists(storyDir)) die(`Already exists: .zspec/stories/${slug}/`);
+  ensureDir(storyDir);
+  ensureDir(path.join(storyDir, 'codebase'));
+
+  const tplDir = path.join(root, '.zspec', 'templates');
+  const date = new Date().toISOString().slice(0, 10);
+
+  function renderTpl(tplFile, fallback) {
+    const p = path.join(tplDir, tplFile);
+    const content = exists(p) ? readText(p) : fallback;
+    return content
+      .replace(/\{\{TITLE\}\}/g, name)
+      .replace(/\{\{SLUG\}\}/g, slug)
+      .replace(/\{\{DATE\}\}/g, date);
+  }
+
+  const storyMd = renderTpl('story.md',
+    `# ${name}\n\n- **Story slug**: \`${slug}\`\n- **Date**: ${date}\n- **Status**: draft\n\n## User Story\n\n> As a **[role]**, I want to **[action]** so that **[business value]**.\n\n## Acceptance Criteria\n\n- [ ]\n`);
+  const contextMd = renderTpl('context.md',
+    `# Context: ${name}\n\n## Relevant Systems\n\n## Touched Modules\n\n## Dependencies\n\n## Architectural Notes\n`);
+  const tasksMd = renderTpl('tasks.md',
+    `# Tasks: ${name}\n\n## Implementation Checklist\n\n- [ ]\n\n## Testing Checklist\n\n- [ ]\n\n## Review Checklist\n\n- [ ] All acceptance criteria met\n- [ ] Lint and tests pass\n`);
+  const notesMd = renderTpl('notes.md',
+    `# Notes: ${name}\n\n## Open Questions\n\n## Decisions\n\n## Risks\n`);
+
+  const codebaseTpls = ['STACK.md', 'INTEGRATIONS.md', 'ARCHITECTURE.md', 'STRUCTURE.md', 'CONVENTIONS.md', 'TESTING.md', 'CONCERNS.md'];
+  const codebaseFallbacks = {
+    'STACK.md': `# Stack: ${name}\n\nGenerated by \`@stack-mapper\`.\n`,
+    'INTEGRATIONS.md': `# Integrations: ${name}\n\nGenerated by \`@stack-mapper\`.\n`,
+    'ARCHITECTURE.md': `# Architecture: ${name}\n\nGenerated by \`@arch-mapper\`.\n`,
+    'STRUCTURE.md': `# Structure: ${name}\n\nGenerated by \`@arch-mapper\`.\n`,
+    'CONVENTIONS.md': `# Conventions: ${name}\n\nGenerated by \`@quality-mapper\`.\n`,
+    'TESTING.md': `# Testing: ${name}\n\nGenerated by \`@quality-mapper\`.\n`,
+    'CONCERNS.md': `# Concerns: ${name}\n\nGenerated by \`@concerns-mapper\`.\n`,
+  };
+
+  writeText(path.join(storyDir, 'story.md'), storyMd, false);
+  writeText(path.join(storyDir, 'context.md'), contextMd, false);
+  writeText(path.join(storyDir, 'tasks.md'), tasksMd, false);
+  writeText(path.join(storyDir, 'notes.md'), notesMd, false);
+  for (const f of codebaseTpls) {
+    writeText(path.join(storyDir, 'codebase', f), renderTpl(`codebase/${f}`, codebaseFallbacks[f]), false);
+  }
+
+  const storyRel = `.zspec/stories/${slug}/story.md`;
+  console.log(`\n📖 Story created: .zspec/stories/${slug}/`);
+  console.log(`   story.md · context.md · tasks.md · notes.md · codebase/`);
+
+  console.log(`\nCopilot / agent prompt to paste once:`);
+  console.log('---');
+  console.log(
+`Read AGENTS.md and .github/copilot-instructions.md. Then open the story: ${storyRel}.
+
+Next steps:
+1. Use @codebase-mapper in Copilot Chat to analyze the codebase for this story.
+   Example: @codebase-mapper story-slug: ${slug}
+2. Review the generated codebase/ docs (STACK, ARCHITECTURE, CONCERNS, etc.).
+3. Fill in context.md with relevant systems and notes.
+4. Implement tasks in tasks.md as small, reviewable diffs.
+5. Record decisions and tradeoffs in notes.md.
 `);
   console.log('---');
 }
@@ -303,6 +392,9 @@ switch (cmd) {
     break;
   case 'new':
     cmd_new(argv);
+    break;
+  case 'story':
+    cmd_story(argv);
     break;
   case 'use':
     cmd_use(argv);
