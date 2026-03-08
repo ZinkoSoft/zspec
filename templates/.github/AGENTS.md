@@ -14,7 +14,7 @@ feature work organized by user story with Copilot agent support.
 
 1. **Create a story**: `zspec story "<story name>"`
 2. **Analyze the codebase**: Use `@codebase-mapper` in Copilot Chat
-3. **Implement**: Follow `tasks.md`, reference `codebase/` docs
+3. **Implement**: Follow `tasks.md`, reference `.zspec/codebase/` docs
 4. **Log decisions**: Update `notes.md` as you go
 
 ### zspec Workflow (existing)
@@ -58,13 +58,13 @@ Agents live in `.github/agents/`. Use them in Copilot Chat with `@agent-name`.
 
 | Output File | Owned By |
 |-------------|----------|
-| `codebase/STACK.md` | `@stack-mapper` |
-| `codebase/INTEGRATIONS.md` | `@stack-mapper` |
-| `codebase/ARCHITECTURE.md` | `@arch-mapper` |
-| `codebase/STRUCTURE.md` | `@arch-mapper` |
-| `codebase/CONVENTIONS.md` | `@quality-mapper` |
-| `codebase/TESTING.md` | `@quality-mapper` |
-| `codebase/CONCERNS.md` | `@concerns-mapper` |
+| `.zspec/codebase/STACK.md` | `@stack-mapper` |
+| `.zspec/codebase/INTEGRATIONS.md` | `@stack-mapper` |
+| `.zspec/codebase/ARCHITECTURE.md` | `@arch-mapper` |
+| `.zspec/codebase/STRUCTURE.md` | `@arch-mapper` |
+| `.zspec/codebase/CONVENTIONS.md` | `@quality-mapper` |
+| `.zspec/codebase/TESTING.md` | `@quality-mapper` |
+| `.zspec/codebase/CONCERNS.md` | `@concerns-mapper` |
 
 ### Orchestration Pattern
 
@@ -88,17 +88,18 @@ Cross-reference instead.
 ```
 .zspec/stories/<story-slug>/
 ├── story.md          ← title, user story, acceptance criteria, constraints
-├── context.md        ← relevant systems, modules, architectural notes
+├── context.md        ← story-specific notes; references .zspec/codebase/ for shared context
 ├── tasks.md          ← implementation, testing, and review checklists
-├── notes.md          ← decisions, tradeoffs, risks, open questions
-└── codebase/
-    ├── STACK.md        ← languages, frameworks, build tooling
-    ├── INTEGRATIONS.md ← APIs, databases, queues, auth, observability
-    ├── ARCHITECTURE.md ← layers, components, patterns, data flow
-    ├── STRUCTURE.md    ← file/folder layout, naming, where to add files
-    ├── CONVENTIONS.md  ← code style, naming, error handling, lint/format
-    ├── TESTING.md      ← test framework, locations, mocking, coverage
-    └── CONCERNS.md     ← technical debt, risks, missing tests, security
+└── notes.md          ← decisions, tradeoffs, risks, open questions
+
+.zspec/codebase/          ← shared repo context (run /map-codebase to populate)
+├── STACK.md            ← languages, frameworks, build tooling
+├── INTEGRATIONS.md     ← APIs, databases, queues, auth, observability
+├── ARCHITECTURE.md     ← layers, components, patterns, data flow
+├── STRUCTURE.md        ← file/folder layout, naming, where to add files
+├── CONVENTIONS.md      ← code style, naming, error handling, lint/format
+├── TESTING.md          ← test framework, locations, mocking, coverage
+└── CONCERNS.md         ← technical debt, risks, missing tests, security
 ```
 
 ---

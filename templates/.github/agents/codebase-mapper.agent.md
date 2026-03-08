@@ -1,10 +1,10 @@
 ---
 name: codebase-mapper
 description: >
-  Orchestrates full codebase analysis. When given a story slug, writes to
-  .zspec/stories/<slug>/codebase/. Without a slug, writes to .zspec/codebase/
-  as shared repo-level context. Delegates to stack-mapper, arch-mapper,
-  quality-mapper, and concerns-mapper.
+  Orchestrates full codebase analysis. Always writes to .zspec/codebase/ as
+  shared repo context. Delegates to stack-mapper, arch-mapper, quality-mapper,
+  and concerns-mapper. Optionally scopes analysis to a story when a slug is
+  provided, but output always lands in the shared .zspec/codebase/ folder.
 tools:
   - read_file
   - list_dir
@@ -17,52 +17,44 @@ user-invocable: true
 # Codebase Mapper (Orchestrator)
 
 You are the codebase analysis orchestrator for this repository. Your job is to
-coordinate specialized mapper agents and produce codebase documentation.
+coordinate specialized mapper agents and write shared codebase documentation
+to `.zspec/codebase/`.
 
-**Without a story slug** → write to `.zspec/codebase/` (shared repo context).
-**With a story slug** → write to `.zspec/stories/<story-slug>/codebase/` and update `context.md`.
+Codebase docs live in **`.zspec/codebase/`** — not inside story folders.
+They are stable, repo-level context that stories read from, not write to.
 
-Do not ask for a story slug if one was not provided. Proceed immediately.
+Do not ask for a story slug. Proceed immediately.
 
 ## How to Invoke
 
 ```
-@codebase-mapper                        ← repo-level context
-@codebase-mapper story-slug: <slug>    ← story-scoped context
+@codebase-mapper
 ```
 
 ## Orchestration Steps
 
-1. **Determine output path**
-   - If a `story-slug` was provided: output goes to `.zspec/stories/<story-slug>/codebase/`; read `story.md` to understand scope
-   - If no slug: output goes to `.zspec/codebase/`; proceed immediately without asking
-
-2. **Inspect the repository**
+1. **Inspect the repository**
    - Scan the project root: package files, lock files, config files, CI config
    - Identify primary languages, frameworks, runtime, build tooling
    - Find test setup, lint/format config, major directories
 
-3. **Delegate to subagents** (run each in turn, keeping results isolated)
+2. **Delegate to subagents** (run each in turn, keeping results isolated)
 
-   - Call `@stack-mapper` → produces `STACK.md` and `INTEGRATIONS.md`
-   - Call `@arch-mapper` → produces `ARCHITECTURE.md` and `STRUCTURE.md`
-   - Call `@quality-mapper` → produces `CONVENTIONS.md` and `TESTING.md`
-   - Call `@concerns-mapper` → produces `CONCERNS.md`
+   - Call `@stack-mapper` → writes `.zspec/codebase/STACK.md` and `INTEGRATIONS.md`
+   - Call `@arch-mapper` → writes `.zspec/codebase/ARCHITECTURE.md` and `STRUCTURE.md`
+   - Call `@quality-mapper` → writes `.zspec/codebase/CONVENTIONS.md` and `TESTING.md`
+   - Call `@concerns-mapper` → writes `.zspec/codebase/CONCERNS.md`
 
-4. **Merge and deduplicate**
-   - Write each output to the correct output path (determined in step 1)
-   - Remove any content duplicated across files
+3. **Merge and deduplicate**
    - Each file owns its domain; cross-reference rather than repeat
+   - Remove any content duplicated across files
 
-5. **Finalize**
-   - If story-scoped: update `.zspec/stories/<story-slug>/context.md` with key findings
-   - Print a one-paragraph summary of findings regardless
+4. **Print a one-paragraph summary** of key findings when complete
 
 ## Output Quality Requirements
 
 - Be concrete and repository-aware, not generic
 - Reference actual file paths, function names, module names
-- Tailor content to the current story, not the entire codebase
 - Avoid vague summaries; prefer specific, actionable observations
 - Each output file should be skimmable in under two minutes
 
