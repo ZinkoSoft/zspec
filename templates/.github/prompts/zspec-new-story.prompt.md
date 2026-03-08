@@ -12,21 +12,27 @@ tools:
 
 # New Story
 
-Scaffold a new story in two phases: first create skeleton files, then fill in content using Serena's symbol tools.
+Scaffold a new story in two phases: create via CLI (source of truth), then fill in content using Serena's symbol tools.
 
-## Phase 1 — Scaffold skeleton files
+## Phase 0 - Create story via CLI (required)
 
-1. Ask the user for the story name if not already provided.
-2. Derive the slug: lowercase, spaces and special characters replaced by `-`, max 60 chars.
-   Example: "Add Billing Support" → `add-billing-support`
-3. Set `DATE` to today's date in `YYYY-MM-DD` format.
-4. Create these four files under `.zspec/stories/<slug>/` using `create_file`:
+1. Ask the user for the story name only if nothing was provided.
+2. Create the story by running the CLI command first:
+   - Preferred: `zspec story "<story name>"`
+   - Fallback: `npx zspec story "<story name>"`
+3. Do not re-implement numbering or git logic in this prompt.
+   - `zspec story` already handles git init, branch selection, and `NNNN-<slug>` auto-incrementing.
+4. Read the created `.zspec/stories/<story-slug>/` files and continue from there.
 
-**`.zspec/stories/<slug>/story.md`**
+## Phase 1 - Fill in story content with Serena
+
+1. Work with these four files under `.zspec/stories/<story-slug>/`:
+
+**`.zspec/stories/<story-slug>/story.md`**
 ```markdown
 # <TITLE>
 
-- **Story slug**: `<slug>`
+- **Story slug**: `<story-slug>`
 - **Date**: <DATE>
 - **Status**: draft
 
@@ -57,7 +63,7 @@ Scaffold a new story in two phases: first create skeleton files, then fill in co
 <!-- What's explicitly out of scope for this story? -->
 ```
 
-**`.zspec/stories/<slug>/context.md`**
+**`.zspec/stories/<story-slug>/context.md`**
 ```markdown
 # Context: <TITLE>
 
@@ -82,7 +88,7 @@ Scaffold a new story in two phases: first create skeleton files, then fill in co
 <!-- Key architectural decisions or constraints relevant to this story. -->
 ```
 
-**`.zspec/stories/<slug>/tasks.md`**
+**`.zspec/stories/<story-slug>/tasks.md`**
 ```markdown
 # Tasks: <TITLE>
 
@@ -110,7 +116,7 @@ Scaffold a new story in two phases: first create skeleton files, then fill in co
 <!-- Things deferred to a future story or tech-debt backlog -->
 ```
 
-**`.zspec/stories/<slug>/notes.md`**
+**`.zspec/stories/<story-slug>/notes.md`**
 ```markdown
 # Notes: <TITLE>
 
@@ -134,17 +140,15 @@ Scaffold a new story in two phases: first create skeleton files, then fill in co
 ## Implementation Notes
 ```
 
-## Phase 2 — Fill in story content with Serena
+Once the files exist, use **`mcp_oraios_serena_replace_symbol_body`** to write content into each section. Markdown headings (`##`, `###`) are symbols - use `find_symbol` to locate them by name path, then `replace_symbol_body` to overwrite the section body.
 
-Once the files exist, use **`mcp_oraios_serena_replace_symbol_body`** to write content into each section. Markdown headings (`##`, `###`) are symbols — use `find_symbol` to locate them by name path, then `replace_symbol_body` to overwrite the section body.
-
-5. Research the codebase using Serena tools (`find_symbol`, `get_symbols_overview`, `search_for_pattern`) to understand relevant systems.
-6. Fill these sections in `story.md` using `replace_symbol_body`:
+2. Research the codebase using Serena tools (`find_symbol`, `get_symbols_overview`, `search_for_pattern`) to understand relevant systems.
+3. Fill these sections in `story.md` using `replace_symbol_body`:
    - `## User Story` — role, action, business value
    - `## Acceptance Criteria` — at least 3 concrete, testable criteria
    - `## Business Goal` — outcome and value delivered
-7. Fill `context.md` sections with codebase findings:
+4. Fill `context.md` sections with codebase findings:
    - `## Relevant Systems`, `## Touched Modules`, `## Dependencies`, `## Architectural Notes`
-8. Add story-specific tasks to `tasks.md` under `## Implementation Checklist`.
-9. Note any open questions or risks in `notes.md`.
-10. Remind the user to run `@codebase-mapper` to populate `.zspec/codebase/` shared docs.
+5. Add story-specific tasks to `tasks.md` under `## Implementation Checklist`.
+6. Note any open questions or risks in `notes.md`.
+7. Remind the user to run `@codebase-mapper` to populate `.zspec/codebase/` shared docs.

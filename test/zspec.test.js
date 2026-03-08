@@ -295,10 +295,10 @@ describe('story', () => {
       const { stdout, status } = run(['story', 'add billing'], { cwd: tmpDir });
       assert.equal(status, 0, `story failed:\n${stdout}`);
       assert.match(stdout, /Story created/);
-      assert.match(stdout, /add-billing/);
+      assert.match(stdout, /0001-add-billing/);
 
-      const storyDir = path.join(tmpDir, '.zspec', 'stories', 'add-billing');
-      assert.ok(fs.existsSync(storyDir), '.zspec/stories/add-billing/ missing');
+      const storyDir = path.join(tmpDir, '.zspec', 'stories', '0001-add-billing');
+      assert.ok(fs.existsSync(storyDir), '.zspec/stories/0001-add-billing/ missing');
       assert.ok(fs.existsSync(path.join(storyDir, 'story.md')), 'story.md missing');
       assert.ok(fs.existsSync(path.join(storyDir, 'context.md')), 'context.md missing');
       assert.ok(fs.existsSync(path.join(storyDir, 'tasks.md')), 'tasks.md missing');
@@ -319,8 +319,8 @@ describe('story', () => {
     try {
       const { stdout, status } = run(['story', 'User Auth & SSO!'], { cwd: tmpDir });
       assert.equal(status, 0);
-      assert.match(stdout, /user-auth-sso/);
-      assert.ok(fs.existsSync(path.join(tmpDir, '.zspec', 'stories', 'user-auth-sso', 'story.md')));
+      assert.match(stdout, /0001-user-auth-sso/);
+      assert.ok(fs.existsSync(path.join(tmpDir, '.zspec', 'stories', '0001-user-auth-sso', 'story.md')));
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
@@ -331,7 +331,7 @@ describe('story', () => {
     try {
       run(['story', 'my feature'], { cwd: tmpDir });
       const content = fs.readFileSync(
-        path.join(tmpDir, '.zspec', 'stories', 'my-feature', 'story.md'), 'utf8'
+        path.join(tmpDir, '.zspec', 'stories', '0001-my-feature', 'story.md'), 'utf8'
       );
       assert.match(content, /my feature/i);
     } finally {
@@ -348,7 +348,7 @@ describe('story', () => {
       const { status } = run(['story', 'templated story'], { cwd: tmpDir });
       assert.equal(status, 0);
       const storyMd = fs.readFileSync(
-        path.join(tmpDir, '.zspec', 'stories', 'templated-story', 'story.md'), 'utf8'
+        path.join(tmpDir, '.zspec', 'stories', '0001-templated-story', 'story.md'), 'utf8'
       );
       // Template includes User Story section
       assert.match(storyMd, /User Story/);
@@ -369,13 +369,17 @@ describe('story', () => {
     }
   });
 
-  it('exits with error if story already exists', () => {
+  it('creates incremented numbered stories when the same name is used twice', () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zspec-story-dup-'));
     try {
-      run(['story', 'duplicate'], { cwd: tmpDir });
-      const { status, stderr } = run(['story', 'duplicate'], { cwd: tmpDir });
-      assert.equal(status, 1);
-      assert.match(stderr, /Already exists/);
+      const first = run(['story', 'duplicate'], { cwd: tmpDir });
+      const second = run(['story', 'duplicate'], { cwd: tmpDir });
+      assert.equal(first.status, 0);
+      assert.equal(second.status, 0);
+      assert.match(first.stdout, /0001-duplicate/);
+      assert.match(second.stdout, /0002-duplicate/);
+      assert.ok(fs.existsSync(path.join(tmpDir, '.zspec', 'stories', '0001-duplicate', 'story.md')));
+      assert.ok(fs.existsSync(path.join(tmpDir, '.zspec', 'stories', '0002-duplicate', 'story.md')));
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }

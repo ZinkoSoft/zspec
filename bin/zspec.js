@@ -78,6 +78,52 @@ function nextSpecNumber(specsDir) {
   return String(max + 1).padStart(4, '0');
 }
 
+function nextStoryNumber(root) {
+  const storiesDir = path.join(root, '.zspec', 'stories');
+  const storyNums = exists(storiesDir)
+    ? fs.readdirSync(storiesDir, { withFileTypes: true })
+      .filter(e => e.isDirectory() && /^\d{4}-/.test(e.name))
+      .map(e => Number(e.name.slice(0, 4)))
+      .filter(n => !Number.isNaN(n))
+    : [];
+
+  const branchListRaw = safeSh('git for-each-ref --format="%(refname:short)" refs/heads') || '';
+  const branchNums = branchListRaw
+    .split(/\r?\n/)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .filter(name => /^\d{4}-/.test(name))
+    .map(name => Number(name.slice(0, 4)))
+    .filter(n => !Number.isNaN(n));
+
+  const max = Math.max(0, ...storyNums, ...branchNums);
+  return String(max + 1).padStart(4, '0');
+}
+
+function ensureGitReady() {
+  let inGit = !!safeSh('git rev-parse --is-inside-work-tree');
+  if (!inGit) {
+    try {
+      execSync('git init', { stdio: 'ignore' });
+      inGit = true;
+    } catch {
+      return { inGit: false, branch: '' };
+    }
+  }
+
+  let branch = safeSh('git branch --show-current') || '';
+  if (!branch) {
+    try {
+      execSync('git checkout -b main', { stdio: 'ignore' });
+      branch = 'main';
+    } catch {
+      // keep branch empty; caller can continue without branch ops
+    }
+  }
+
+  return { inGit, branch };
+}
+
 function slugify(s) {
   return s
     .trim()
@@ -292,7 +338,13 @@ function cmd_story(args) {
   if (!name) die('missing <story-name>.');
 
   const root = repoRoot();
-  const slug = slugify(name);
+  const storiesDir = path.join(root, '.zspec', 'stories');
+  ensureDir(storiesDir);
+
+  const { inGit, branch: currentBranch } = ensureGitReady();
+  const isPrefixed = /^\d{4}-[a-z0-9][a-z0-9-]*$/.test(name);
+  const slug = isPrefixed ? name.toLowerCase() : `${nextStoryNumber(root)}-${slugify(name)}`;
+  const title = isPrefixed ? name.replace(/^\d{4}-/, '').replace(/-/g, ' ') : name;
   const storyDir = path.join(root, '.zspec', 'stories', slug);
 
   if (exists(storyDir)) die(`Already exists: .zspec/stories/${slug}/`);
@@ -305,19 +357,19 @@ function cmd_story(args) {
     const p = path.join(tplDir, tplFile);
     const content = exists(p) ? readText(p) : fallback;
     return content
-      .replace(/\{\{TITLE\}\}/g, name)
+      .replace(/\{\{TITLE\}\}/g, title)
       .replace(/\{\{SLUG\}\}/g, slug)
       .replace(/\{\{DATE\}\}/g, date);
   }
 
   const storyMd = renderTpl('story.md',
-    `# ${name}\n\n- **Story slug**: \`${slug}\`\n- **Date**: ${date}\n- **Status**: draft\n\n## User Story\n\n> As a **[role]**, I want to **[action]** so that **[business value]**.\n\n## Acceptance Criteria\n\n- [ ]\n`);
+    `# ${title}\n\n- **Story slug**: \`${slug}\`\n- **Date**: ${date}\n- **Status**: draft\n\n## User Story\n\n> As a **[role]**, I want to **[action]** so that **[business value]**.\n\n## Acceptance Criteria\n\n- [ ]\n`);
   const contextMd = renderTpl('context.md',
-    `# Context: ${name}\n\n## Relevant Systems\n\n## Touched Modules\n\n## Dependencies\n\n## Architectural Notes\n`);
+    `# Context: ${title}\n\n## Relevant Systems\n\n## Touched Modules\n\n## Dependencies\n\n## Architectural Notes\n`);
   const tasksMd = renderTpl('tasks.md',
-    `# Tasks: ${name}\n\n## Implementation Checklist\n\n- [ ]\n\n## Testing Checklist\n\n- [ ]\n\n## Review Checklist\n\n- [ ] All acceptance criteria met\n- [ ] Lint and tests pass\n`);
+    `# Tasks: ${title}\n\n## Implementation Checklist\n\n- [ ]\n\n## Testing Checklist\n\n- [ ]\n\n## Review Checklist\n\n- [ ] All acceptance criteria met\n- [ ] Lint and tests pass\n`);
   const notesMd = renderTpl('notes.md',
-    `# Notes: ${name}\n\n## Open Questions\n\n## Decisions\n\n## Risks\n`);
+    `# Notes: ${title}\n\n## Open Questions\n\n## Decisions\n\n## Risks\n`);
 
   writeText(path.join(storyDir, 'story.md'), storyMd, false);
   writeText(path.join(storyDir, 'context.md'), contextMd, false);
@@ -325,6 +377,18 @@ function cmd_story(args) {
   writeText(path.join(storyDir, 'notes.md'), notesMd, false);
 
   const storyRel = `.zspec/stories/${slug}/story.md`;
+
+  if (inGit) {
+    const branchExists = !!safeSh(`git branch --list "${slug}"`);
+    if (currentBranch !== slug) {
+      try {
+        execSync(branchExists ? `git checkout "${slug}"` : `git checkout -b "${slug}"`, { stdio: 'ignore' });
+      } catch {
+        // non-fatal: story scaffolding still succeeded
+      }
+    }
+  }
+
   console.log(`\n📖 Story created: .zspec/stories/${slug}/`);
   console.log(`   story.md · context.md · tasks.md · notes.md`);
 
